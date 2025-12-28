@@ -507,9 +507,9 @@
                 setDiagMessage({ type: 'loading', text: 'Probando conexión...' });
                 try {
                     if (!user) throw new Error("No hay usuario autenticado.");
-                    const testRef = collection(db, 'artifacts', appId, 'users', user.uid, 'diagnostic');
+                    const testRef = collection(db, 'artifacts', appId, 'public', 'data', 'diagnostic');
                     await addDoc(testRef, { timestamp: new Date(), test: true });
-                    setDiagMessage({ type: 'success', text: '¡Conexión exitosa! La base de datos responde.' });
+                    setDiagMessage({ type: 'success', text: '¡Conexión exitosa! Base de datos sincronizada.' });
                 } catch (err) {
                     let msg = err.message;
                     if (err.code === 'permission-denied') msg = "Permisos denegados. Revisa las reglas en Firebase Console.";
@@ -579,9 +579,13 @@
                 return () => unsubscribe();
             }, []);
 
+            // === CORE DATA SYNC CHANGE: USING SHARED PUBLIC PATH ===
+            // This ensures data is the same regardless of the device/anonymous User ID
             useEffect(() => {
                 if (!user || !isConfigured) return;
-                const settingsRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'general');
+                
+                // Settings - Moved to Public
+                const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'general');
                 onSnapshot(settingsRef, (s) => { 
                     if (s.exists() && s.data().location) {
                         setLocationConfig(s.data().location); 
@@ -591,29 +595,34 @@
                     }
                 });
                 
-                const ordersRef = collection(db, 'artifacts', appId, 'users', user.uid, 'orders');
+                // Orders - Moved to Public
+                const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
                 const unsubOrders = onSnapshot(query(ordersRef), (s) => {
                     const loaded = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(a.date) - new Date(b.date));
                     setOrders(loaded);
                     if (isFirstLoad.current && loaded.length > 0) { setCurrentDate(new Date(loaded[loaded.length - 1].date)); isFirstLoad.current = false; }
                 }, (error) => console.error("Error fetching orders:", error));
                 
-                const expensesRef = collection(db, 'artifacts', appId, 'users', user.uid, 'expenses');
+                // Expenses - Moved to Public
+                const expensesRef = collection(db, 'artifacts', appId, 'public', 'data', 'expenses');
                 const unsubExpenses = onSnapshot(query(expensesRef), (s) => {
                     setExpenses(s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(a.date) - new Date(b.date)));
                 }, (error) => console.error("Error fetching expenses:", error));
 
-                const inventoryRef = collection(db, 'artifacts', appId, 'users', user.uid, 'inventory');
+                // Inventory - Moved to Public
+                const inventoryRef = collection(db, 'artifacts', appId, 'public', 'data', 'inventory');
                 const unsubInventory = onSnapshot(query(inventoryRef), (s) => {
                     setInventory(s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => a.name.localeCompare(b.name)));
                 }, (error) => console.error("Error fetching inventory:", error));
 
-                const debtsRef = collection(db, 'artifacts', appId, 'users', user.uid, 'debts');
+                // Debts - Moved to Public
+                const debtsRef = collection(db, 'artifacts', appId, 'public', 'data', 'debts');
                 const unsubDebts = onSnapshot(query(debtsRef), (s) => {
                     setDebts(s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(a.date) - new Date(b.date)));
                 });
                 
-                const incomesRef = collection(db, 'artifacts', appId, 'users', user.uid, 'extra_incomes');
+                // Incomes - Moved to Public
+                const incomesRef = collection(db, 'artifacts', appId, 'public', 'data', 'extra_incomes');
                 const unsubIncomes = onSnapshot(query(incomesRef), (s) => {
                     setIncomes(s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(a.date) - new Date(b.date)));
                 }, (error) => console.error("Error fetching incomes:", error));
@@ -820,7 +829,8 @@
                         setLocationConfig(newConfig);
                         
                         if (user) {
-                            await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'general'), { location: newConfig }, { merge: true });
+                            // Saving to Public Settings
+                            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'general'), { location: newConfig }, { merge: true });
                         }
                         
                         // Close modal and give feedback
@@ -867,7 +877,8 @@
                     aiColor: generateColorFromText(form.detail), aiIcon: getSmartIconName(form.detail), category: identifyCategory(form.detail)
                 };
                 
-                const colRef = collection(db, 'artifacts', appId, 'users', user.uid, 'orders');
+                // Saving to Public Orders
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
                 
                 try {
                     if (editingId) {
@@ -906,7 +917,8 @@
                 const parts = expenseForm.date.split('-');
                 const selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
 
-                const colRef = collection(db, 'artifacts', appId, 'users', user.uid, 'expenses');
+                // Saving to Public Expenses
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'expenses');
                 try {
                     await addDoc(colRef, { description: expenseForm.description, amount: parseFloat(expenseForm.amount) || 0, method: expenseForm.method, date: selectedDate.toISOString(), type: 'expense' });
                     setIsExpenseModalOpen(false); setExpenseForm({ description: '', amount: '', method: 'cash', date: new Date().toISOString().split('T')[0] });
@@ -936,7 +948,8 @@
                 const parts = incomeForm.date.split('-');
                 const selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
 
-                const colRef = collection(db, 'artifacts', appId, 'users', user.uid, 'extra_incomes');
+                // Saving to Public Incomes
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'extra_incomes');
                 try {
                     await addDoc(colRef, { description: incomeForm.description, amount: parseFloat(incomeForm.amount) || 0, method: incomeForm.method, date: selectedDate.toISOString(), type: 'income' });
                     setIsIncomeModalOpen(false); setIncomeForm({ description: '', amount: '', method: 'cash', date: new Date().toISOString().split('T')[0] });
@@ -976,7 +989,9 @@
                     detail: inventoryForm.detail,
                     price: parseFloat(inventoryForm.price) || 0
                 };
-                const colRef = collection(db, 'artifacts', appId, 'users', user.uid, 'inventory');
+                
+                // Saving to Public Inventory
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'inventory');
                 
                 try {
                     if (editingProductId) {
@@ -1002,7 +1017,8 @@
                     isDanger: true,
                     onConfirm: async () => {
                         try {
-                            await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'inventory', id));
+                            // Deleting from Public Inventory
+                            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'inventory', id));
                             addToast('Producto eliminado', 'success');
                         } catch(e) { addToast('Error al eliminar', 'error'); }
                     }
@@ -1028,7 +1044,8 @@
                 if (!debtForm.amount || parseFloat(debtForm.amount) <= 0) { addToast('Falta el monto de la cuota', 'error'); return; }
 
                 setIsSaving(true);
-                const colRef = collection(db, 'artifacts', appId, 'users', user.uid, 'debts');
+                // Saving to Public Debts
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'debts');
                 const batch = writeBatch(db);
                 
                 try {
@@ -1041,8 +1058,6 @@
                         const amount = parseFloat(debtForm.amount);
                         const baseDate = new Date(currentDate); 
                         // Ensure we start from current view month. 
-                        // If current view month is in past relative to real today, user might want to record past debt? 
-                        // Let's stick to baseDate = 1st of currently viewed month.
                         baseDate.setDate(1);
 
                         if (debtForm.type === 'unique') {
@@ -1084,7 +1099,8 @@
                     isDanger: true,
                     onConfirm: async () => {
                         try {
-                            await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'debts', id));
+                            // Deleting from Public Debts
+                            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'debts', id));
                             addToast('Deuda eliminada', 'success');
                         } catch(e) { addToast('Error al eliminar', 'error'); }
                     }
@@ -1093,21 +1109,23 @@
 
             const toggleDebtPaid = async (debt) => {
                 try {
-                    await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'debts', debt.id), { paid: !debt.paid });
+                    // Toggling Public Debt
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'debts', debt.id), { paid: !debt.paid });
                 } catch(e) { console.error(e); }
             };
 
 
             const confirmPayment = async (method) => {
                 if (!user || !pendingPaymentId) return;
-                await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'orders', pendingPaymentId), { paid: true, paymentMethod: method });
+                // Updating Public Order
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', pendingPaymentId), { paid: true, paymentMethod: method });
                 setIsPaymentModalOpen(false); setPendingPaymentId(null);
                 addToast('Pago registrado');
             };
 
             const toggle = async (id, field) => {
                 const order = orders.find(o => o.id === id);
-                if (order) await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'orders', id), { [field]: !order[field] });
+                if (order) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id), { [field]: !order[field] });
             };
             const initiatePayment = (id) => { const o = orders.find(x => x.id === id); if(o.paid) toggle(id,'paid'); else { setPendingPaymentId(id); setIsPaymentModalOpen(true); }};
             
@@ -1119,7 +1137,8 @@
                     isDanger: true,
                     onConfirm: async () => {
                         try {
-                            await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'orders', id));
+                            // Deleting from Public Orders
+                            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id));
                             addToast('Pedido eliminado', 'success');
                         } catch(e) { addToast('Error al eliminar', 'error'); }
                     }
@@ -1134,7 +1153,8 @@
                     isDanger: true,
                     onConfirm: async () => {
                         try {
-                            await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'expenses', id));
+                            // Deleting from Public Expenses
+                            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', id));
                             addToast('Gasto eliminado', 'success');
                         } catch(e) { addToast('Error al eliminar', 'error'); }
                     }
@@ -1149,7 +1169,8 @@
                     isDanger: true,
                     onConfirm: async () => {
                         try {
-                            await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'extra_incomes', id));
+                            // Deleting from Public Incomes
+                            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'extra_incomes', id));
                             addToast('Ingreso eliminado', 'success');
                         } catch(e) { addToast('Error al eliminar', 'error'); }
                     }
