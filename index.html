@@ -77,7 +77,7 @@
             MoreHorizontal, Sun, Cloud, CloudRain, ChevronLeft, 
             ChevronRight, Wind, CloudLightning, MapPin, Settings, Loader2,
             Wallet, ArrowUpRight, ArrowDownLeft, Banknote, CreditCard,
-            TrendingDown, Activity, Info, FileJson, LogOut, Lock, Shield, User, Wifi, WifiOff, Stethoscope, Coins, ShoppingBag, Minus, Layers, AlertTriangle, Tag, List, Receipt, CheckCircle2, Circle, Repeat, Truck, Phone, Mail, Code, ArrowUpCircle, ArrowDownCircle, Printer, Boxes, AlertOctagon
+            TrendingDown, Activity, Info, FileJson, LogOut, Lock, Shield, User, Wifi, WifiOff, Stethoscope, Coins, ShoppingBag, Minus, Layers, AlertTriangle, Tag, List, Receipt, CheckCircle2, Circle, Repeat, Truck, Phone, Mail, Code, ArrowUpCircle, ArrowDownCircle, Printer, Boxes, AlertOctagon, Split, Clock
         } from 'lucide-react';
 
         // --- FIREBASE SETUP ---
@@ -457,12 +457,22 @@
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [editingId, setEditingId] = useState(null);
             
-            // Order Form Update: Added productId and quantity
+            // Order Form
             const [form, setForm] = useState({ client: '', detail: '', price: '', quantity: 1, paid: false, paymentMethod: null, delivered: false, important: false, date: '', productId: null });
             
             const [searchTerm, setSearchTerm] = useState('');
+            
+            // Payment Modal Logic updated for Mixed Payment
             const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
             const [pendingPaymentId, setPendingPaymentId] = useState(null);
+            const [paymentModalStep, setPaymentModalStep] = useState('select'); // 'select' or 'mixed'
+            const [mixedAmounts, setMixedAmounts] = useState({ cash: 0, transfer: 0 });
+
+            // Delivery Modal Logic
+            const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
+            const [pendingDeliveryId, setPendingDeliveryId] = useState(null);
+            const [deliveryDateInput, setDeliveryDateInput] = useState('');
+
             const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
             const [expenseForm, setExpenseForm] = useState({ description: '', amount: '', method: 'cash', date: new Date().toISOString() });
             
@@ -601,9 +611,10 @@
                 
                 const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
                 const unsubOrders = onSnapshot(query(ordersRef), (s) => {
-                    const loaded = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(a.date) - new Date(b.date));
+                    // Ordenar por fecha descendente (lo más nuevo arriba)
+                    const loaded = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(b.date) - new Date(a.date));
                     setOrders(loaded);
-                    if (isFirstLoad.current && loaded.length > 0) { setCurrentDate(new Date(loaded[loaded.length - 1].date)); isFirstLoad.current = false; }
+                    if (isFirstLoad.current && loaded.length > 0) { setCurrentDate(new Date(loaded[0].date)); isFirstLoad.current = false; }
                 });
                 
                 const expensesRef = collection(db, 'artifacts', appId, 'public', 'data', 'expenses');
@@ -639,6 +650,10 @@
             const capitalizedMonthLabel = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
 
             const filteredOrders = useMemo(() => orders.filter(o => {
+                // Special handling for 'delivered' filter: Show ALL delivered orders regardless of month (or maybe just this month? User said "almacenar todos los pedidos entregados... ordenados como movimientos". Usually filters are within the view month, but "Entregados" implies a log. Let's keep it consistent with the date navigator for now, OR show all if that's what's expected. Let's respect the month filter for consistency, unless user wants a global history.)
+                // Re-reading: "donde se van a almacenar todos los pedidos entregados... el mas reciente en la parte superior".
+                // I will filter by month normally. If they want to see old ones, they navigate back.
+                
                 const d = new Date(o.date);
                 const matchesDate = d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
                 const matchesSearch = (o.client + o.detail).toLowerCase().includes(searchTerm.toLowerCase());
@@ -646,9 +661,19 @@
                 let matchesFilter = true;
                 if (orderFilter === 'pending_pay') matchesFilter = !o.paid;
                 if (orderFilter === 'pending_delivery') matchesFilter = !o.delivered;
+                if (orderFilter === 'delivered') matchesFilter = o.delivered;
 
                 return matchesDate && matchesSearch && matchesFilter;
-            }).sort((a, b) => (b.important - a.important) || (new Date(b.date) - new Date(a.date))), [orders, currentDate, searchTerm, orderFilter]);
+            }).sort((a, b) => {
+                // If filter is 'delivered', sort by deliveryDate if available, else standard date
+                if (orderFilter === 'delivered') {
+                    const dateA = a.deliveryDate ? new Date(a.deliveryDate) : new Date(a.date);
+                    const dateB = b.deliveryDate ? new Date(b.deliveryDate) : new Date(b.date);
+                    return dateB - dateA;
+                }
+                // Default sort (Creation Date)
+                return new Date(b.date) - new Date(a.date);
+            }), [orders, currentDate, searchTerm, orderFilter]);
 
             const filteredInventory = useMemo(() => {
                 return inventory.filter(item => 
@@ -679,10 +704,13 @@
             }, [debts, currentDate]);
 
             const finances = useMemo(() => {
+                // Filtramos las órdenes pagadas que correspondan a este mes
+                // Usamos la fecha de PAGO (paymentDate) si existe, o la fecha de creación (date) como fallback
                 const monthOrders = orders.filter(o => {
-                    const d = new Date(o.date);
+                    const d = new Date(o.paymentDate || o.date);
                     return o.paid && d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
                 });
+                
                 const monthExpenses = expenses.filter(e => {
                     const d = new Date(e.date);
                     return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
@@ -696,15 +724,42 @@
                 const expenseMonth = monthExpenses.reduce((acc, e) => acc + e.amount, 0);
                 const netProfitMonth = incomeMonth - expenseMonth;
 
+                // Movements List logic update for mixed
                 const movements = [
-                    ...monthOrders.map(o => ({ ...o, type: 'income', description: `Pedido: ${o.client} - ${o.detail}`, amount: o.price, method: o.paymentMethod || 'cash' })),
+                    ...monthOrders.map(o => {
+                        let description = `Pedido: ${o.client} - ${o.detail}`;
+                        if (o.paymentMethod === 'mixed' && o.paymentDetails) {
+                            description += ` (E: $${(o.paymentDetails.cash || 0).toLocaleString()} / T: $${(o.paymentDetails.transfer || 0).toLocaleString()})`;
+                        }
+                        
+                        return { 
+                            ...o, 
+                            type: 'income', 
+                            description, 
+                            amount: o.price, 
+                            method: o.paymentMethod || 'cash',
+                            // Usamos paymentDate para el registro del movimiento si existe
+                            date: o.paymentDate || o.date 
+                        };
+                    }),
                     ...monthIncomes.map(i => ({ ...i, type: 'income', description: `Ingreso: ${i.description}`, amount: i.amount, method: i.method || 'cash' })),
                     ...monthExpenses.map(e => ({ ...e, type: 'expense', method: e.method || 'cash' }))
-                ].sort((a, b) => new Date(b.date) - new Date(a.date));
+                ].sort((a, b) => new Date(b.date) - new Date(a.date)); // Orden Descendente por fecha de movimiento
                 
                 const allPaid = orders.filter(o => o.paid);
-                const totalCashOrders = allPaid.filter(o => o.paymentMethod === 'cash').reduce((s,o) => s + o.price, 0);
-                const totalTransferOrders = allPaid.filter(o => o.paymentMethod === 'transfer').reduce((s,o) => s + o.price, 0);
+                
+                // Calculate Totals handling Mixed Payments
+                const totalCashOrders = allPaid.reduce((sum, o) => {
+                    if (o.paymentMethod === 'cash') return sum + o.price;
+                    if (o.paymentMethod === 'mixed' && o.paymentDetails) return sum + (o.paymentDetails.cash || 0);
+                    return sum;
+                }, 0);
+
+                const totalTransferOrders = allPaid.reduce((sum, o) => {
+                    if (o.paymentMethod === 'transfer') return sum + o.price;
+                    if (o.paymentMethod === 'mixed' && o.paymentDetails) return sum + (o.paymentDetails.transfer || 0);
+                    return sum;
+                }, 0);
                 
                 const totalCashExpenses = expenses.filter(e => e.method === 'cash').reduce((s,e) => s + e.amount, 0);
                 const totalTransferExpenses = expenses.filter(e => e.method === 'transfer').reduce((s,e) => s + e.amount, 0);
@@ -721,13 +776,14 @@
             const statsAnalytics = useMemo(() => {
                 const isMonth = statScope === 'month';
                 const dataset = orders.filter(o => {
-                    const d = new Date(o.date);
+                    // Para estadísticas, usamos paymentDate si está pagado, para reflejar ingresos reales en el tiempo correcto
+                    const d = new Date(o.paymentDate || o.date);
                     if (!o.paid) return false;
                     if (isMonth) return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
                     else return d.getFullYear() === currentDate.getFullYear();
                 });
                 const prevDataset = orders.filter(o => {
-                    const d = new Date(o.date);
+                    const d = new Date(o.paymentDate || o.date);
                     if (!o.paid) return false;
                     if (isMonth) {
                         const prevDate = new Date(currentDate);
@@ -744,13 +800,13 @@
                 if (isMonth) {
                     const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
                     for(let i=1; i<=daysInMonth; i++) {
-                        const val = dataset.filter(o => new Date(o.date).getDate() === i).reduce((s,o) => s + o.price, 0);
+                        const val = dataset.filter(o => new Date(o.paymentDate || o.date).getDate() === i).reduce((s,o) => s + o.price, 0);
                         chartData.push({ label: `${i}`, value: val });
                     }
                 } else {
                     const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
                     months.forEach((m, i) => {
-                        const val = dataset.filter(o => new Date(o.date).getMonth() === i).reduce((s,o) => s + o.price, 0);
+                        const val = dataset.filter(o => new Date(o.paymentDate || o.date).getMonth() === i).reduce((s,o) => s + o.price, 0);
                         chartData.push({ label: m, value: val });
                     });
                 }
@@ -777,13 +833,24 @@
                 const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
                 const dayCounts = new Array(7).fill(0);
                 dataset.forEach(o => {
-                    dayCounts[new Date(o.date).getDay()]++;
+                    dayCounts[new Date(o.paymentDate || o.date).getDay()]++;
                 });
                 const bestDayIndex = dayCounts.indexOf(Math.max(...dayCounts));
                 const bestDay = totalOrders > 0 ? days[bestDayIndex] : '-';
 
-                const cashTotal = dataset.filter(o => o.paymentMethod === 'cash').reduce((s,o) => s + o.price, 0);
-                const transferTotal = dataset.filter(o => o.paymentMethod === 'transfer').reduce((s,o) => s + o.price, 0);
+                // Stats Payment Handling
+                const cashTotal = dataset.reduce((sum, o) => {
+                    if (o.paymentMethod === 'cash') return sum + o.price;
+                    if (o.paymentMethod === 'mixed' && o.paymentDetails) return sum + (o.paymentDetails.cash || 0);
+                    return sum;
+                }, 0);
+
+                const transferTotal = dataset.reduce((sum, o) => {
+                    if (o.paymentMethod === 'transfer') return sum + o.price;
+                    if (o.paymentMethod === 'mixed' && o.paymentDetails) return sum + (o.paymentDetails.transfer || 0);
+                    return sum;
+                }, 0);
+                
                 const paymentStats = { cash: cashTotal, transfer: transferTotal };
 
                 return { totalRevenue, growth, chartData, products, insight, avgTicket, bestDay, paymentStats };
@@ -869,17 +936,33 @@
 
                 setIsSaving(true);
                 
+                // Lógica mejorada de fechas
+                let selectedDate;
+                const now = new Date();
                 const parts = form.date.split('-');
-                const year = parseInt(parts[0]);
-                const month = parseInt(parts[1]) - 1; 
-                const day = parseInt(parts[2]);
-                const selectedDate = new Date(year, month, day, 12, 0, 0);
+                
+                // Verificar si la fecha seleccionada en el form es hoy (localmente)
+                const isToday = parseInt(parts[0]) === now.getFullYear() && 
+                                (parseInt(parts[1]) - 1) === now.getMonth() && 
+                                parseInt(parts[2]) === now.getDate();
+
+                if (isToday && !editingId) {
+                    // Si es hoy y es un pedido nuevo, usar la hora exacta actual
+                    selectedDate = now;
+                } else {
+                    // Si es otra fecha o estamos editando, usar fecha a las 12:00 para consistencia
+                    selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
+                }
 
                 const orderData = {
                     client: form.client, detail: form.detail, price: parseFloat(form.price) || 0,
                     quantity: parseInt(form.quantity) || 1,
                     paid: form.paid, paymentMethod: form.paid ? (form.paymentMethod || 'cash') : null,
+                    // Si se marca como pagado al crear, agregar paymentDate
+                    paymentDate: form.paid ? (form.paymentDate || selectedDate.toISOString()) : null,
                     delivered: form.delivered, important: form.important,
+                    // Si se marca entregado al crear, agregar deliveryDate
+                    deliveryDate: form.delivered ? (form.deliveryDate || selectedDate.toISOString()) : null,
                     date: selectedDate.toISOString(),
                     aiColor: generateColorFromText(form.detail), aiIcon: getSmartIconName(form.detail), category: identifyCategory(form.detail),
                     productId: form.productId || null
@@ -1162,19 +1245,138 @@
                 } catch(e) { console.error(e); }
             };
 
+            // ---- PAYMENT LOGIC UPDATED FOR MIXED PAYMENT ----
+
+            const initiatePayment = (id) => { 
+                const o = orders.find(x => x.id === id); 
+                if(o.paid) {
+                    toggle(id,'paid'); 
+                } else { 
+                    setPendingPaymentId(id); 
+                    setPaymentModalStep('select');
+                    // Iniciar vacío el efectivo para que el usuario escriba, y el resto (total) en transferencia
+                    setMixedAmounts({ cash: '', transfer: o.price });
+                    setIsPaymentModalOpen(true); 
+                }
+            };
+
+            const handleMixedAmountChange = (type, value) => {
+                const rawValue = value; // Permitir string vacío
+                const numericVal = rawValue === '' ? 0 : parseFloat(rawValue);
+
+                const order = orders.find(o => o.id === pendingPaymentId);
+                const total = order ? order.price : 0;
+
+                if (type === 'cash') {
+                    setMixedAmounts({ 
+                        cash: rawValue, // Guardar lo que escribe (puede ser vacío)
+                        transfer: Math.max(0, total - numericVal) // Calcular resto
+                    });
+                } else {
+                    setMixedAmounts({ 
+                        cash: Math.max(0, total - numericVal), 
+                        transfer: rawValue 
+                    });
+                }
+            };
 
             const confirmPayment = async (method) => {
                 if (!user || !pendingPaymentId) return;
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', pendingPaymentId), { paid: true, paymentMethod: method });
-                setIsPaymentModalOpen(false); setPendingPaymentId(null);
+                
+                const updateData = { 
+                    paid: true, 
+                    paymentMethod: method,
+                    // Agregamos la fecha exacta del pago
+                    paymentDate: new Date().toISOString()
+                };
+                
+                if (method === 'mixed') {
+                    // Validation
+                    const order = orders.find(o => o.id === pendingPaymentId);
+                    const total = order ? order.price : 0;
+                    
+                    // Asegurar que usamos números para validar
+                    const cashVal = mixedAmounts.cash === '' ? 0 : parseFloat(mixedAmounts.cash);
+                    const transferVal = mixedAmounts.transfer === '' ? 0 : parseFloat(mixedAmounts.transfer);
+                    
+                    if (Math.abs((cashVal + transferVal) - total) > 1) {
+                        addToast(`La suma debe dar $${total}`, 'error');
+                        return;
+                    }
+                    updateData.paymentDetails = { 
+                        cash: cashVal, 
+                        transfer: transferVal 
+                    };
+                } else {
+                    // Clear payment details if switching to simple method
+                     updateData.paymentDetails = null;
+                }
+
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', pendingPaymentId), updateData);
+                setIsPaymentModalOpen(false); 
+                setPendingPaymentId(null);
                 addToast('Pago registrado');
+            };
+
+            const handleDeliveryConfirm = async () => {
+                if (!user || !pendingDeliveryId) return;
+                
+                // Si el usuario no elige fecha, usar la actual. Si elige, usar esa.
+                const finalDate = deliveryDateInput ? new Date(deliveryDateInput).toISOString() : new Date().toISOString();
+
+                try {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', pendingDeliveryId), { 
+                        delivered: true,
+                        deliveryDate: finalDate
+                    });
+                    addToast('Entrega registrada');
+                    setIsDeliveryModalOpen(false);
+                    setPendingDeliveryId(null);
+                } catch(e) {
+                    addToast('Error al registrar entrega', 'error');
+                }
             };
 
             const toggle = async (id, field) => {
                 const order = orders.find(o => o.id === id);
-                if (order) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id), { [field]: !order[field] });
+                if (!order) return;
+                
+                const updates = {};
+                
+                // Si estamos cambiando el estado de pago, actualizamos paymentDate
+                if (field === 'paid') {
+                    if (!order.paid) { // Se está marcando como pagado
+                        updates.paid = true;
+                        updates.paymentDate = new Date().toISOString();
+                    } else { // Se está desmarcando
+                        updates.paid = false;
+                        updates.paymentDate = null;
+                    }
+                } 
+                // LOGICA ESPECIAL DE ENTREGA
+                else if (field === 'delivered') {
+                    if (!order.delivered) { 
+                        // Si está pendiente y vamos a marcarlo entregado, abrir modal
+                        setPendingDeliveryId(id);
+                        // Pre-setear input con la fecha actual (formato para input datetime-local: YYYY-MM-DDTHH:MM)
+                        const now = new Date();
+                        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                        setDeliveryDateInput(now.toISOString().slice(0, 16));
+                        
+                        setIsDeliveryModalOpen(true);
+                        return; // Detener aquí, el modal maneja el update
+                    } else { 
+                        // Si ya estaba entregado, lo desmarcamos simple
+                        updates.delivered = false;
+                        updates.deliveryDate = null;
+                    }
+                }
+                else {
+                    updates[field] = !order[field];
+                }
+                
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id), updates);
             };
-            const initiatePayment = (id) => { const o = orders.find(x => x.id === id); if(o.paid) toggle(id,'paid'); else { setPendingPaymentId(id); setIsPaymentModalOpen(true); }};
             
             const removeOrder = (id) => { 
                 setConfirmModal({
@@ -1222,8 +1424,6 @@
             };
 
             // ---- HELPER FOR MODAL RENDER ----
-            // Gets stock info including logic for when we are editing an existing order
-            // (we add back the quantity of the current order to the available stock to prevent locking the user out)
             const getStockInfo = () => {
                 if (!form.productId) return { available: 0, hasIssue: false, product: null };
                 
@@ -1364,10 +1564,11 @@
                                         <button onClick={() => setOrderFilter('all')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${orderFilter === 'all' ? 'bg-stone-800 text-white shadow-md' : 'bg-white text-stone-500 border border-stone-200 hover:bg-stone-50'}`}>Todos</button>
                                         <button onClick={() => setOrderFilter('pending_pay')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${orderFilter === 'pending_pay' ? 'bg-amber-100 text-amber-700 border border-amber-200 shadow-sm' : 'bg-white text-stone-500 border border-stone-200 hover:bg-stone-50'}`}>Por Cobrar</button>
                                         <button onClick={() => setOrderFilter('pending_delivery')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${orderFilter === 'pending_delivery' ? 'bg-blue-100 text-blue-700 border border-blue-200 shadow-sm' : 'bg-white text-stone-500 border border-stone-200 hover:bg-stone-50'}`}>Por Entregar</button>
+                                        <button onClick={() => setOrderFilter('delivered')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${orderFilter === 'delivered' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-sm' : 'bg-white text-stone-500 border border-stone-200 hover:bg-stone-50'}`}>Entregados</button>
                                     </div>
 
                                     <div className="space-y-4">
-                                        {filteredOrders.length === 0 ? <div className="flex flex-col items-center justify-center py-20 text-stone-400 bg-white rounded-3xl border border-dashed border-stone-200"><Package size={48} className="mb-4 opacity-20" /><p>No hay pedidos en {monthLabel}.</p></div> : 
+                                        {filteredOrders.length === 0 ? <div className="flex flex-col items-center justify-center py-20 text-stone-400 bg-white rounded-3xl border border-dashed border-stone-200"><Package size={48} className="mb-4 opacity-20" /><p>No hay pedidos en esta selección.</p></div> : 
                                             filteredOrders.map(order => (
                                                 <div key={order.id} className={`group bg-white rounded-3xl p-5 border transition-all duration-300 hover:shadow-lg relative overflow-hidden ${order.important ? 'border-amber-200 ring-4 ring-amber-50' : 'border-stone-100 shadow-sm'}`}>
                                                     {order.important && <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-amber-100/50 to-transparent -mr-8 -mt-8 rounded-full pointer-events-none"></div>}
@@ -1379,7 +1580,10 @@
                                                              </div>
                                                              <div>
                                                                 <h3 className="font-bold text-stone-900 text-lg leading-tight">{order.client}</h3>
-                                                                <span className="text-[11px] font-bold tracking-wide uppercase text-stone-400">{order.category} • {new Date(order.date).toLocaleDateString()}</span>
+                                                                <span className="text-[11px] font-bold tracking-wide uppercase text-stone-400">
+                                                                    {order.category} • {new Date(order.date).toLocaleDateString()}
+                                                                    {order.deliveryDate && order.delivered && <span className="text-emerald-500 ml-1"> • Entregado: {new Date(order.deliveryDate).toLocaleString(undefined, {day:'numeric', month:'numeric', hour:'2-digit', minute:'2-digit'})}</span>}
+                                                                </span>
                                                              </div>
                                                         </div>
                                                         <div className="flex gap-1">
@@ -1400,9 +1604,11 @@
                                                         <div className="flex items-center gap-2 bg-stone-50 px-3 py-1.5 rounded-xl">
                                                              <span className="text-lg font-black text-stone-800">${order.price.toLocaleString()}</span>
                                                              {order.paymentMethod && (
-                                                                <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${order.paymentMethod === 'cash' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                                                                    {order.paymentMethod === 'cash' ? <Banknote size={12}/> : <CreditCard size={12}/>}
-                                                                    <span>{order.paymentMethod === 'cash' ? 'Efectivo' : 'Transf'}</span>
+                                                                <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${order.paymentMethod === 'cash' ? 'bg-green-100 text-green-700' : (order.paymentMethod === 'transfer' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700')}`}>
+                                                                    {order.paymentMethod === 'cash' && <Banknote size={12}/>}
+                                                                    {order.paymentMethod === 'transfer' && <CreditCard size={12}/>}
+                                                                    {order.paymentMethod === 'mixed' && <div className="flex gap-0.5"><Banknote size={12}/><CreditCard size={12}/></div>}
+                                                                    <span>{order.paymentMethod === 'cash' ? 'Efectivo' : (order.paymentMethod === 'transfer' ? 'Transf' : 'Mixto')}</span>
                                                                 </div>
                                                              )}
                                                         </div>
@@ -1569,9 +1775,16 @@
                                                 <tbody>
                                                     {finances.movements.length === 0 ? <tr><td colSpan={5} className="px-4 py-8 text-center text-stone-400">Sin movimientos este mes.</td></tr> : finances.movements.map((mov) => (
                                                         <tr key={mov.id} className="border-b border-stone-100 hover:bg-stone-50/50">
-                                                            <td className="px-4 py-3 text-stone-500 w-24">{new Date(mov.date).toLocaleDateString(undefined, {day:'2-digit', month:'2-digit'})}</td>
+                                                            <td className="px-4 py-3 text-stone-500 w-32">
+                                                                {new Date(mov.date).toLocaleDateString(undefined, {day:'2-digit', month:'2-digit'})}
+                                                                <span className="block text-[10px] text-stone-400">{new Date(mov.date).toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit'})}</span>
+                                                            </td>
                                                             <td className="px-4 py-3 font-medium text-stone-800">{mov.description} {mov.type === 'income' ? <span className="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded ml-1">Ingreso</span> : <span className="text-[10px] text-red-600 bg-red-50 px-1.5 py-0.5 rounded ml-1">Gasto</span>}</td>
-                                                            <td className="px-4 py-3 text-center text-stone-500">{mov.method === 'cash' ? <Banknote size={14} className="mx-auto"/> : <CreditCard size={14} className="mx-auto"/>}</td>
+                                                            <td className="px-4 py-3 text-center text-stone-500">
+                                                                {mov.method === 'cash' && <Banknote size={14} className="mx-auto"/>}
+                                                                {mov.method === 'transfer' && <CreditCard size={14} className="mx-auto"/>}
+                                                                {mov.method === 'mixed' && <div className="flex justify-center gap-1"><Banknote size={14} /><CreditCard size={14} /></div>}
+                                                            </td>
                                                             <td className={`px-4 py-3 text-right font-bold ${mov.type === 'income' ? 'text-emerald-600' : 'text-red-500'}`}>{mov.type === 'income' ? '+' : '-'}${mov.amount.toLocaleString()}</td>
                                                             <td className="px-4 py-3 text-right">
                                                                 {mov.type === 'expense' && <button onClick={() => removeExpense(mov.id)} className="text-stone-300 hover:text-red-500"><Trash2 size={14} /></button>}
@@ -1629,7 +1842,7 @@
                                             <div className="flex items-center gap-2"><Calendar size={20} className="text-amber-500"/> <span className="text-xl font-bold">{statsAnalytics.bestDay}</span></div>
                                         </div>
                                         <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm md:col-span-2">
-                                            <p className="text-xs text-stone-400 font-bold uppercase mb-2">Métodos de Pago</p>
+                                            <p className="text-xs text-stone-400 font-bold uppercase mb-2">Métodos de Pago (Real)</p>
                                             <div className="flex items-center gap-4">
                                                 <div className="flex-1">
                                                     <div className="flex justify-between text-xs mb-1"><span className="font-bold text-stone-600">Efectivo</span><span>${statsAnalytics.paymentStats.cash.toLocaleString()}</span></div>
@@ -1736,11 +1949,11 @@
                             <div className="flex gap-4">
                                 <div className="space-y-1 flex-1">
                                     <label className="text-xs font-bold text-stone-400 uppercase">Cantidad</label>
-                                    <input type="number" min="1" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={form.quantity} onChange={e => setForm({...form, quantity: e.target.value})} />
+                                    <input type="number" min="1" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={form.quantity} onChange={e => setForm({...form, quantity: e.target.value})} onFocus={e => e.target.select()} />
                                 </div>
                                 <div className="space-y-1 flex-[2]">
                                     <label className="text-xs font-bold text-stone-400 uppercase">Precio Unitario</label>
-                                    <input type="number" placeholder="0.00" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={form.price} onChange={e => setForm({...form, price: e.target.value})} />
+                                    <input type="number" placeholder="0.00" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={form.price} onChange={e => setForm({...form, price: e.target.value})} onFocus={e => e.target.select()} />
                                 </div>
                             </div>
 
@@ -1755,10 +1968,94 @@
                         </form>
                     </Modal>
 
-                    <Modal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} title="¿Cómo pagó?">
-                        <div className="grid grid-cols-2 gap-4 pt-2">
-                            <button onClick={() => confirmPayment('cash')} className="flex flex-col items-center justify-center p-6 bg-green-50 border border-green-200 rounded-2xl hover:bg-green-100 transition-colors gap-3"><div className="bg-green-100 text-green-700 p-3 rounded-full"><Banknote size={32} /></div><span className="font-bold text-green-800">Efectivo</span></button>
-                            <button onClick={() => confirmPayment('transfer')} className="flex flex-col items-center justify-center p-6 bg-blue-50 border border-blue-200 rounded-2xl hover:bg-blue-100 transition-colors gap-3"><div className="bg-blue-100 text-blue-700 p-3 rounded-full"><CreditCard size={32} /></div><span className="font-bold text-blue-800">Transferencia</span></button>
+                    {/* PAYMENT MODAL (UPDATED FOR MIXED) */}
+                    <Modal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} title="Registrar Cobro">
+                        {paymentModalStep === 'select' ? (
+                            <div className="space-y-3 pt-2">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button onClick={() => confirmPayment('cash')} className="flex flex-col items-center justify-center p-6 bg-green-50 border border-green-200 rounded-2xl hover:bg-green-100 transition-colors gap-3 group">
+                                        <div className="bg-green-100 text-green-700 p-3 rounded-full group-hover:scale-110 transition-transform"><Banknote size={28} /></div>
+                                        <span className="font-bold text-green-800">Efectivo</span>
+                                    </button>
+                                    <button onClick={() => confirmPayment('transfer')} className="flex flex-col items-center justify-center p-6 bg-blue-50 border border-blue-200 rounded-2xl hover:bg-blue-100 transition-colors gap-3 group">
+                                        <div className="bg-blue-100 text-blue-700 p-3 rounded-full group-hover:scale-110 transition-transform"><CreditCard size={28} /></div>
+                                        <span className="font-bold text-blue-800">Transferencia</span>
+                                    </button>
+                                </div>
+                                <button onClick={() => setPaymentModalStep('mixed')} className="w-full flex items-center justify-center gap-3 p-4 bg-purple-50 border border-purple-200 rounded-2xl hover:bg-purple-100 transition-colors text-purple-800 font-bold">
+                                    <div className="flex -space-x-1"><Banknote size={20}/><CreditCard size={20}/></div>
+                                    <span>Pago Mixto (Efectivo + Transferencia)</span>
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-5 pt-2 animate-in slide-in-from-right-4">
+                                <div className="bg-stone-50 p-4 rounded-2xl border border-stone-100 text-center">
+                                    <p className="text-xs text-stone-400 uppercase font-bold mb-1">Total a Cobrar</p>
+                                    <p className="text-2xl font-bold text-stone-900">${orders.find(o => o.id === pendingPaymentId)?.price.toLocaleString()}</p>
+                                </div>
+                                
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-green-600 uppercase mb-1 flex items-center gap-1"><Banknote size={12}/> Monto en Efectivo</label>
+                                        <input 
+                                            type="number" 
+                                            placeholder="0" 
+                                            className="w-full p-4 bg-white border border-stone-200 rounded-xl font-bold text-lg focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none"
+                                            value={mixedAmounts.cash}
+                                            onChange={(e) => handleMixedAmountChange('cash', e.target.value)}
+                                            onFocus={e => e.target.select()}
+                                            autoFocus
+                                        />
+                                    </div>
+                                    <div className="flex justify-center"><ArrowDownCircle size={20} className="text-stone-300"/></div>
+                                    <div>
+                                        <label className="text-xs font-bold text-blue-600 uppercase mb-1 flex items-center gap-1"><CreditCard size={12}/> Resto en Transferencia (Auto)</label>
+                                        <input 
+                                            type="number" 
+                                            className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl font-bold text-lg text-stone-500"
+                                            value={mixedAmounts.transfer}
+                                            readOnly
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 pt-2">
+                                    <button onClick={() => setPaymentModalStep('select')} className="flex-1 py-3 rounded-xl font-bold bg-stone-100 text-stone-500 hover:bg-stone-200">Volver</button>
+                                    <button onClick={() => confirmPayment('mixed')} className="flex-[2] py-3 rounded-xl font-bold bg-purple-600 text-white hover:bg-purple-700 shadow-lg shadow-purple-200">Confirmar Mixto</button>
+                                </div>
+                            </div>
+                        )}
+                    </Modal>
+
+                     {/* DELIVERY MODAL */}
+                     <Modal isOpen={isDeliveryModalOpen} onClose={() => setIsDeliveryModalOpen(false)} title="Confirmar Entrega">
+                        <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                            <div className="bg-blue-50 p-4 rounded-2xl flex items-center gap-3 border border-blue-100">
+                                <div className="bg-blue-100 p-2 rounded-xl text-blue-600"><Truck size={24}/></div>
+                                <div>
+                                    <p className="font-bold text-blue-800 text-sm">Estás por entregar el pedido:</p>
+                                    <p className="text-blue-600 text-xs">{orders.find(o => o.id === pendingDeliveryId)?.detail}</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-stone-400 uppercase">Fecha y Hora de Entrega</label>
+                                <div className="relative">
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400"><Clock size={18}/></div>
+                                    <input 
+                                        type="datetime-local" 
+                                        className="w-full pl-11 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none text-sm font-medium"
+                                        value={deliveryDateInput}
+                                        onChange={(e) => setDeliveryDateInput(e.target.value)}
+                                    />
+                                </div>
+                                <p className="text-[10px] text-stone-400 ml-1">Dejar como está para usar fecha actual.</p>
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                                <button onClick={() => setIsDeliveryModalOpen(false)} className="flex-1 py-3 rounded-xl font-bold bg-stone-100 text-stone-500 hover:bg-stone-200 transition-colors">Cancelar</button>
+                                <button onClick={handleDeliveryConfirm} className="flex-[2] py-3 rounded-xl font-bold bg-stone-900 text-white hover:bg-stone-800 transition-colors shadow-lg">Confirmar Entrega</button>
+                            </div>
                         </div>
                     </Modal>
 
@@ -1766,7 +2063,7 @@
                         <form onSubmit={handleSaveExpense} className="space-y-5">
                             <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Fecha</label><input type="date" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl" value={expenseForm.date} onChange={e => setExpenseForm({...expenseForm, date: e.target.value})} /></div>
                             <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Descripción</label><input type="text" placeholder="Ej: Compra de yerba..." autoFocus className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl" value={expenseForm.description} onChange={e => setExpenseForm({...expenseForm, description: e.target.value})} /></div>
-                            <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Monto</label><input type="number" placeholder="0.00" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={expenseForm.amount} onChange={e => setExpenseForm({...expenseForm, amount: e.target.value})} /></div>
+                            <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Monto</label><input type="number" placeholder="0.00" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={expenseForm.amount} onChange={e => setExpenseForm({...expenseForm, amount: e.target.value})} onFocus={e => e.target.select()} /></div>
                             <div className="grid grid-cols-2 gap-3">
                                 <button type="button" onClick={() => setExpenseForm({...expenseForm, method: 'cash'})} className={`py-3 px-4 rounded-xl border flex items-center justify-center gap-2 ${expenseForm.method === 'cash' ? 'bg-stone-800 text-white' : 'bg-white text-stone-400'}`}><Banknote size={18} /> <span className="text-sm font-bold">Efectivo</span></button>
                                 <button type="button" onClick={() => setExpenseForm({...expenseForm, method: 'transfer'})} className={`py-3 px-4 rounded-xl border flex items-center justify-center gap-2 ${expenseForm.method === 'transfer' ? 'bg-stone-800 text-white' : 'bg-white text-stone-400'}`}><CreditCard size={18} /> <span className="text-sm font-bold">Transf.</span></button>
@@ -1779,7 +2076,7 @@
                         <form onSubmit={handleSaveIncome} className="space-y-5">
                             <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Fecha</label><input type="date" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl" value={incomeForm.date} onChange={e => setIncomeForm({...incomeForm, date: e.target.value})} /></div>
                             <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Descripción</label><input type="text" placeholder="Ej: Inversión inicial..." autoFocus className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl" value={incomeForm.description} onChange={e => setIncomeForm({...incomeForm, description: e.target.value})} /></div>
-                            <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Monto</label><input type="number" placeholder="0.00" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={incomeForm.amount} onChange={e => setIncomeForm({...incomeForm, amount: e.target.value})} /></div>
+                            <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Monto</label><input type="number" placeholder="0.00" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={incomeForm.amount} onChange={e => setIncomeForm({...incomeForm, amount: e.target.value})} onFocus={e => e.target.select()} /></div>
                             <div className="grid grid-cols-2 gap-3">
                                 <button type="button" onClick={() => setIncomeForm({...incomeForm, method: 'cash'})} className={`py-3 px-4 rounded-xl border flex items-center justify-center gap-2 ${incomeForm.method === 'cash' ? 'bg-stone-800 text-white' : 'bg-white text-stone-400'}`}><Banknote size={18} /> <span className="text-sm font-bold">Efectivo</span></button>
                                 <button type="button" onClick={() => setIncomeForm({...incomeForm, method: 'transfer'})} className={`py-3 px-4 rounded-xl border flex items-center justify-center gap-2 ${incomeForm.method === 'transfer' ? 'bg-stone-800 text-white' : 'bg-white text-stone-400'}`}><CreditCard size={18} /> <span className="text-sm font-bold">Transf.</span></button>
@@ -1793,8 +2090,8 @@
                             <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Producto</label><input type="text" placeholder="Ej: Mate Imperial" autoFocus className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl" value={inventoryForm.name} onChange={e => setInventoryForm({...inventoryForm, name: e.target.value})} /></div>
                             <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Detalle</label><input type="text" placeholder="Ej: Con virola de alpaca..." className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl" value={inventoryForm.detail} onChange={e => setInventoryForm({...inventoryForm, detail: e.target.value})} /></div>
                             <div className="flex gap-4">
-                                <div className="space-y-1 flex-1"><label className="text-xs font-bold text-stone-400 uppercase">Precio</label><input type="number" placeholder="0.00" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={inventoryForm.price} onChange={e => setInventoryForm({...inventoryForm, price: e.target.value})} /></div>
-                                <div className="space-y-1 flex-1"><label className="text-xs font-bold text-stone-400 uppercase">Stock Inicial</label><input type="number" placeholder="0" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={inventoryForm.stock} onChange={e => setInventoryForm({...inventoryForm, stock: e.target.value})} /></div>
+                                <div className="space-y-1 flex-1"><label className="text-xs font-bold text-stone-400 uppercase">Precio</label><input type="number" placeholder="0.00" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={inventoryForm.price} onChange={e => setInventoryForm({...inventoryForm, price: e.target.value})} onFocus={e => e.target.select()} /></div>
+                                <div className="space-y-1 flex-1"><label className="text-xs font-bold text-stone-400 uppercase">Stock Inicial</label><input type="number" placeholder="0" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={inventoryForm.stock} onChange={e => setInventoryForm({...inventoryForm, stock: e.target.value})} onFocus={e => e.target.select()} /></div>
                             </div>
                             <button type="submit" disabled={isSaving} className="w-full bg-stone-900 hover:bg-stone-800 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-70">{isSaving ? <Loader2 size={20} className="animate-spin" /> : (editingProductId ? 'Guardar Cambios' : 'Guardar Producto')}</button>
                         </form>
@@ -1816,10 +2113,10 @@
                             )}
 
                             {debtForm.type === 'installments' && !editingDebtId && (
-                                <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Cantidad de Cuotas</label><input type="number" placeholder="Ej: 6" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl" value={debtForm.installments} onChange={e => setDebtForm({...debtForm, installments: e.target.value})} /></div>
+                                <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Cantidad de Cuotas</label><input type="number" placeholder="Ej: 6" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl" value={debtForm.installments} onChange={e => setDebtForm({...debtForm, installments: e.target.value})} onFocus={e => e.target.select()} /></div>
                             )}
 
-                            <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Valor de la Cuota</label><input type="number" placeholder="0.00" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={debtForm.amount} onChange={e => setDebtForm({...debtForm, amount: e.target.value})} /></div>
+                            <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Valor de la Cuota</label><input type="number" placeholder="0.00" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={debtForm.amount} onChange={e => setDebtForm({...debtForm, amount: e.target.value})} onFocus={e => e.target.select()} /></div>
                             
                             <button type="submit" disabled={isSaving} className="w-full bg-stone-900 hover:bg-stone-800 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-70">{isSaving ? <Loader2 size={20} className="animate-spin" /> : (editingDebtId ? 'Guardar Cambios' : 'Agregar Deuda')}</button>
                         </form>
