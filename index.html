@@ -11,6 +11,10 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- jsPDF & AutoTable for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
     <style>
         body { font-family: 'Inter', sans-serif; }
         /* Scrollbar personalizada sutil */
@@ -73,13 +77,13 @@
             MoreHorizontal, Sun, Cloud, CloudRain, ChevronLeft, 
             ChevronRight, Wind, CloudLightning, MapPin, Settings, Loader2,
             Wallet, ArrowUpRight, ArrowDownLeft, Banknote, CreditCard,
-            TrendingDown, Activity, Info, FileJson, LogOut, Lock, Shield, User, Wifi, WifiOff, Stethoscope, Coins, ShoppingBag, Minus, Layers, AlertTriangle, Tag, List, Receipt, CheckCircle2, Circle, Repeat, Truck, Phone, Mail, Code, ArrowUpCircle, ArrowDownCircle
+            TrendingDown, Activity, Info, FileJson, LogOut, Lock, Shield, User, Wifi, WifiOff, Stethoscope, Coins, ShoppingBag, Minus, Layers, AlertTriangle, Tag, List, Receipt, CheckCircle2, Circle, Repeat, Truck, Phone, Mail, Code, ArrowUpCircle, ArrowDownCircle, Printer, Boxes, AlertOctagon
         } from 'lucide-react';
 
         // --- FIREBASE SETUP ---
         import { initializeApp } from "firebase/app";
         import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "firebase/auth";
-        import { getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, writeBatch } from "firebase/firestore";
+        import { getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, writeBatch, getDoc } from "firebase/firestore";
 
         // ==========================================
         // CONFIGURACIÓN
@@ -423,7 +427,7 @@
             const [expenses, setExpenses] = useState([]);
             const [inventory, setInventory] = useState([]);
             const [debts, setDebts] = useState([]);
-            const [incomes, setIncomes] = useState([]); // New state for manual incomes
+            const [incomes, setIncomes] = useState([]); 
             const [isAuthLoading, setIsAuthLoading] = useState(true);
             const [toasts, setToasts] = useState([]);
             
@@ -452,7 +456,10 @@
             const isFirstLoad = useRef(true); 
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [editingId, setEditingId] = useState(null);
-            const [form, setForm] = useState({ client: '', detail: '', price: '', paid: false, paymentMethod: null, delivered: false, important: false, date: '' });
+            
+            // Order Form Update: Added productId and quantity
+            const [form, setForm] = useState({ client: '', detail: '', price: '', quantity: 1, paid: false, paymentMethod: null, delivered: false, important: false, date: '', productId: null });
+            
             const [searchTerm, setSearchTerm] = useState('');
             const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
             const [pendingPaymentId, setPendingPaymentId] = useState(null);
@@ -466,7 +473,7 @@
             // Inventory (Price List)
             const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
             const [editingProductId, setEditingProductId] = useState(null);
-            const [inventoryForm, setInventoryForm] = useState({ name: '', detail: '', price: '' });
+            const [inventoryForm, setInventoryForm] = useState({ name: '', detail: '', price: '', stock: '' });
             const [searchProduct, setSearchProduct] = useState('');
             
             // Debts
@@ -547,8 +554,8 @@
                 const defaultDate = order ? order.date.split('T')[0] : new Date().toISOString().split('T')[0];
                 
                 setForm(order ? { ...order, date: defaultDate } : { 
-                    client: '', detail: '', price: '', paid: false, paymentMethod: null, delivered: false, important: false, 
-                    date: defaultDate 
+                    client: '', detail: '', price: '', quantity: 1, paid: false, paymentMethod: null, delivered: false, important: false, 
+                    date: defaultDate, productId: null
                 });
                 setIsModalOpen(true);
             };
@@ -579,53 +586,45 @@
                 return () => unsubscribe();
             }, []);
 
-            // === CORE DATA SYNC CHANGE: USING SHARED PUBLIC PATH ===
-            // This ensures data is the same regardless of the device/anonymous User ID
+            // === CORE DATA SYNC ===
             useEffect(() => {
                 if (!user || !isConfigured) return;
                 
-                // Settings - Moved to Public
                 const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'general');
                 onSnapshot(settingsRef, (s) => { 
                     if (s.exists() && s.data().location) {
                         setLocationConfig(s.data().location); 
                     } else {
-                        // Ensure default is set if not in DB
                         setLocationConfig(DEFAULT_LOCATION);
                     }
                 });
                 
-                // Orders - Moved to Public
                 const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
                 const unsubOrders = onSnapshot(query(ordersRef), (s) => {
                     const loaded = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(a.date) - new Date(b.date));
                     setOrders(loaded);
                     if (isFirstLoad.current && loaded.length > 0) { setCurrentDate(new Date(loaded[loaded.length - 1].date)); isFirstLoad.current = false; }
-                }, (error) => console.error("Error fetching orders:", error));
+                });
                 
-                // Expenses - Moved to Public
                 const expensesRef = collection(db, 'artifacts', appId, 'public', 'data', 'expenses');
                 const unsubExpenses = onSnapshot(query(expensesRef), (s) => {
                     setExpenses(s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(a.date) - new Date(b.date)));
-                }, (error) => console.error("Error fetching expenses:", error));
+                });
 
-                // Inventory - Moved to Public
                 const inventoryRef = collection(db, 'artifacts', appId, 'public', 'data', 'inventory');
                 const unsubInventory = onSnapshot(query(inventoryRef), (s) => {
                     setInventory(s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => a.name.localeCompare(b.name)));
-                }, (error) => console.error("Error fetching inventory:", error));
+                });
 
-                // Debts - Moved to Public
                 const debtsRef = collection(db, 'artifacts', appId, 'public', 'data', 'debts');
                 const unsubDebts = onSnapshot(query(debtsRef), (s) => {
                     setDebts(s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(a.date) - new Date(b.date)));
                 });
                 
-                // Incomes - Moved to Public
                 const incomesRef = collection(db, 'artifacts', appId, 'public', 'data', 'extra_incomes');
                 const unsubIncomes = onSnapshot(query(incomesRef), (s) => {
                     setIncomes(s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(a.date) - new Date(b.date)));
-                }, (error) => console.error("Error fetching incomes:", error));
+                });
 
                 return () => { unsubOrders(); unsubExpenses(); unsubIncomes(); unsubInventory(); unsubDebts(); };
             }, [user]);
@@ -651,7 +650,6 @@
                 return matchesDate && matchesSearch && matchesFilter;
             }).sort((a, b) => (b.important - a.important) || (new Date(b.date) - new Date(a.date))), [orders, currentDate, searchTerm, orderFilter]);
 
-            // --- FILTERED INVENTORY (PRICE LIST) ---
             const filteredInventory = useMemo(() => {
                 return inventory.filter(item => 
                     item.name.toLowerCase().includes(searchProduct.toLowerCase()) || 
@@ -659,7 +657,6 @@
                 );
             }, [inventory, searchProduct]);
 
-            // --- FILTERED DEBTS ---
             const filteredDebts = useMemo(() => {
                  return debts.filter(d => {
                      const date = new Date(d.date);
@@ -774,11 +771,9 @@
                 else insight = "Mantienes el mismo nivel de ventas que el periodo anterior.";
                 if (products.length > 0) insight += ` El producto estrella es "${products[0].name}".`;
                 
-                // Advanced Stats
                 const totalOrders = dataset.length;
                 const avgTicket = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
                 
-                // Best Day Calculation
                 const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
                 const dayCounts = new Array(7).fill(0);
                 dataset.forEach(o => {
@@ -787,7 +782,6 @@
                 const bestDayIndex = dayCounts.indexOf(Math.max(...dayCounts));
                 const bestDay = totalOrders > 0 ? days[bestDayIndex] : '-';
 
-                // Payment Methods
                 const cashTotal = dataset.filter(o => o.paymentMethod === 'cash').reduce((s,o) => s + o.price, 0);
                 const transferTotal = dataset.filter(o => o.paymentMethod === 'transfer').reduce((s,o) => s + o.price, 0);
                 const paymentStats = { cash: cashTotal, transfer: transferTotal };
@@ -795,10 +789,10 @@
                 return { totalRevenue, growth, chartData, products, insight, avgTicket, bestDay, paymentStats };
             }, [orders, currentDate, statScope]);
 
-            // --- INVENTORY ANALYTICS ---
+            // --- INVENTORY ANALYTICS UPDATED WITH STOCK ---
             const inventoryStats = useMemo(() => {
-                const totalItems = inventory.length;
-                const totalValue = inventory.reduce((acc, item) => acc + (item.price || 0), 0); // Simplified value (sum of prices)
+                const totalItems = inventory.reduce((acc, item) => acc + (parseInt(item.stock) || 0), 0);
+                const totalValue = inventory.reduce((acc, item) => acc + ((item.price || 0) * (parseInt(item.stock) || 0)), 0);
                 return { totalItems, totalValue };
             }, [inventory]);
 
@@ -829,11 +823,9 @@
                         setLocationConfig(newConfig);
                         
                         if (user) {
-                            // Saving to Public Settings
                             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'general'), { location: newConfig }, { merge: true });
                         }
                         
-                        // Close modal and give feedback
                         setIsSettingsOpen(false);
                         setSettingsCity('');
                         addToast(`Ubicación actualizada: ${place.name}`, 'success');
@@ -848,6 +840,24 @@
                 }
             };
 
+            const handleSelectProduct = (e) => {
+                const prodId = e.target.value;
+                if (!prodId) {
+                    setForm(prev => ({ ...prev, productId: null }));
+                    return;
+                }
+                const product = inventory.find(p => p.id === prodId);
+                if (product) {
+                    setForm(prev => ({
+                        ...prev,
+                        productId: product.id,
+                        detail: `${product.name} ${product.detail || ''}`.trim(),
+                        price: product.price,
+                        category: identifyCategory(product.name) // Auto categorize based on product name
+                    }));
+                }
+            };
+
             const handleSaveOrder = async (e) => {
                 e.preventDefault(); 
                 if (isSaving) return;
@@ -859,45 +869,53 @@
 
                 setIsSaving(true);
                 
-                // Construct Date object safely
-                // form.date should be YYYY-MM-DD from input type="date"
                 const parts = form.date.split('-');
                 const year = parseInt(parts[0]);
-                const month = parseInt(parts[1]) - 1; // JS months are 0-11
+                const month = parseInt(parts[1]) - 1; 
                 const day = parseInt(parts[2]);
-                
-                // Create date object at noon to avoid timezone rolling to previous day
                 const selectedDate = new Date(year, month, day, 12, 0, 0);
 
                 const orderData = {
                     client: form.client, detail: form.detail, price: parseFloat(form.price) || 0,
+                    quantity: parseInt(form.quantity) || 1,
                     paid: form.paid, paymentMethod: form.paid ? (form.paymentMethod || 'cash') : null,
                     delivered: form.delivered, important: form.important,
                     date: selectedDate.toISOString(),
-                    aiColor: generateColorFromText(form.detail), aiIcon: getSmartIconName(form.detail), category: identifyCategory(form.detail)
+                    aiColor: generateColorFromText(form.detail), aiIcon: getSmartIconName(form.detail), category: identifyCategory(form.detail),
+                    productId: form.productId || null
                 };
                 
-                // Saving to Public Orders
-                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
+                const batch = writeBatch(db);
+                const ordersRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'));
                 
                 try {
                     if (editingId) {
-                        await updateDoc(doc(colRef, editingId), orderData);
+                        // Regular update if editing
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', editingId), orderData);
                         addToast('Pedido actualizado', 'success');
                     } else { 
-                        await addDoc(colRef, orderData); 
-                        // Update current view to the date of the new order so user can see it
+                        // Create Order
+                        batch.set(ordersRef, orderData);
+
+                        // If product selected, decrement stock
+                        if (form.productId) {
+                            const productRef = doc(db, 'artifacts', appId, 'public', 'data', 'inventory', form.productId);
+                            const productDoc = await getDoc(productRef);
+                            if (productDoc.exists()) {
+                                const currentStock = parseInt(productDoc.data().stock) || 0;
+                                const qtyToDeduct = parseInt(form.quantity) || 1;
+                                batch.update(productRef, { stock: Math.max(0, currentStock - qtyToDeduct) });
+                            }
+                        }
+
+                        await batch.commit();
                         setCurrentDate(selectedDate);
-                        addToast('Pedido guardado', 'success');
+                        addToast('Pedido guardado y stock actualizado', 'success');
                     }
                     closeModal();
                 } catch (err) { 
                     console.error(err); 
-                    if (err.code === 'permission-denied') {
-                        addToast('Faltan permisos (Revisar Reglas de Firebase)', 'error');
-                    } else {
-                        addToast(`Error (${err.code}): ${err.message}`, 'error'); 
-                    }
+                    addToast(`Error: ${err.message}`, 'error'); 
                 } finally {
                     setIsSaving(false);
                 }
@@ -913,22 +931,16 @@
                 
                 setIsSaving(true);
 
-                 // Date handling for expense
                 const parts = expenseForm.date.split('-');
                 const selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
 
-                // Saving to Public Expenses
                 const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'expenses');
                 try {
                     await addDoc(colRef, { description: expenseForm.description, amount: parseFloat(expenseForm.amount) || 0, method: expenseForm.method, date: selectedDate.toISOString(), type: 'expense' });
                     setIsExpenseModalOpen(false); setExpenseForm({ description: '', amount: '', method: 'cash', date: new Date().toISOString().split('T')[0] });
                     addToast('Gasto registrado', 'success');
                 } catch(e) {
-                    if (e.code === 'permission-denied') {
-                        addToast('Error: Permisos denegados', 'error');
-                    } else {
-                        addToast(`Error (${e.code}): ${e.message}`, 'error');
-                    }
+                     addToast(`Error: ${e.message}`, 'error');
                 } finally {
                     setIsSaving(false);
                 }
@@ -944,11 +956,9 @@
                 
                 setIsSaving(true);
 
-                // Date handling for income
                 const parts = incomeForm.date.split('-');
                 const selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
 
-                // Saving to Public Incomes
                 const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'extra_incomes');
                 try {
                     await addDoc(colRef, { description: incomeForm.description, amount: parseFloat(incomeForm.amount) || 0, method: incomeForm.method, date: selectedDate.toISOString(), type: 'income' });
@@ -961,18 +971,18 @@
                 }
             };
 
-            // NEW: Open Inventory Modal for Edit or Create
             const openInventoryModal = (product = null) => {
                 if (product) {
                     setEditingProductId(product.id);
                     setInventoryForm({
                         name: product.name,
                         detail: product.detail || '',
-                        price: product.price
+                        price: product.price,
+                        stock: product.stock !== undefined ? product.stock : ''
                     });
                 } else {
                     setEditingProductId(null);
-                    setInventoryForm({ name: '', detail: '', price: '' });
+                    setInventoryForm({ name: '', detail: '', price: '', stock: '' });
                 }
                 setIsInventoryModalOpen(true);
             };
@@ -987,10 +997,10 @@
                 const itemData = {
                     name: inventoryForm.name,
                     detail: inventoryForm.detail,
-                    price: parseFloat(inventoryForm.price) || 0
+                    price: parseFloat(inventoryForm.price) || 0,
+                    stock: parseInt(inventoryForm.stock) || 0
                 };
                 
-                // Saving to Public Inventory
                 const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'inventory');
                 
                 try {
@@ -1017,12 +1027,57 @@
                     isDanger: true,
                     onConfirm: async () => {
                         try {
-                            // Deleting from Public Inventory
                             await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'inventory', id));
                             addToast('Producto eliminado', 'success');
                         } catch(e) { addToast('Error al eliminar', 'error'); }
                     }
                 });
+            };
+            
+            // --- PDF GENERATION ---
+            const printPriceList = () => {
+                if (!window.jspdf) {
+                    addToast("Error: Librería PDF no cargada", "error");
+                    return;
+                }
+                const doc = new window.jspdf.jsPDF();
+                
+                // Title
+                doc.setFontSize(22);
+                doc.setTextColor(40);
+                doc.text("POR AMOR AL MATE", 14, 20);
+                
+                // Subtitle
+                const currentMonthName = new Intl.DateTimeFormat('es-AR', { month: 'long' }).format(new Date());
+                doc.setFontSize(14);
+                doc.setTextColor(100);
+                doc.text(`LISTA DE PRECIOS (${currentMonthName.toUpperCase()})`, 14, 30);
+                
+                // Table
+                const tableColumn = ["Producto", "Detalle", "Precio", "Stock"];
+                const tableRows = [];
+
+                inventory.forEach(item => {
+                    const itemData = [
+                        item.name,
+                        item.detail || '-',
+                        `$${item.price.toLocaleString()}`,
+                        item.stock ? item.stock.toString() : '0'
+                    ];
+                    tableRows.push(itemData);
+                });
+
+                doc.autoTable({
+                    head: [tableColumn],
+                    body: tableRows,
+                    startY: 40,
+                    theme: 'grid',
+                    headStyles: { fillColor: [20, 83, 45] }, // Emerald-900 like
+                    styles: { font: 'helvetica', fontSize: 10 }
+                });
+
+                doc.save(`Lista_Precios_${currentMonthName}.pdf`);
+                addToast("PDF Descargado", "success");
             };
 
             // DEBTS LOGIC
@@ -1044,20 +1099,16 @@
                 if (!debtForm.amount || parseFloat(debtForm.amount) <= 0) { addToast('Falta el monto de la cuota', 'error'); return; }
 
                 setIsSaving(true);
-                // Saving to Public Debts
                 const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'debts');
                 const batch = writeBatch(db);
                 
                 try {
                     if (editingDebtId) {
-                        // Editing existing single debt
                         await updateDoc(doc(colRef, editingDebtId), { detail: debtForm.detail, amount: parseFloat(debtForm.amount) });
                         addToast('Deuda actualizada', 'success');
                     } else {
-                        // Creating new debt(s)
                         const amount = parseFloat(debtForm.amount);
                         const baseDate = new Date(currentDate); 
-                        // Ensure we start from current view month. 
                         baseDate.setDate(1);
 
                         if (debtForm.type === 'unique') {
@@ -1072,7 +1123,6 @@
                                  batch.set(newRef, { detail: `${debtForm.detail} (${i+1}/${count})`, amount, date: d.toISOString(), paid: false });
                              }
                         } else if (debtForm.type === 'fixed') {
-                             // Generate for 12 months
                              for (let i = 0; i < 12; i++) {
                                  const d = new Date(baseDate);
                                  d.setMonth(d.getMonth() + i);
@@ -1099,7 +1149,6 @@
                     isDanger: true,
                     onConfirm: async () => {
                         try {
-                            // Deleting from Public Debts
                             await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'debts', id));
                             addToast('Deuda eliminada', 'success');
                         } catch(e) { addToast('Error al eliminar', 'error'); }
@@ -1109,7 +1158,6 @@
 
             const toggleDebtPaid = async (debt) => {
                 try {
-                    // Toggling Public Debt
                     await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'debts', debt.id), { paid: !debt.paid });
                 } catch(e) { console.error(e); }
             };
@@ -1117,7 +1165,6 @@
 
             const confirmPayment = async (method) => {
                 if (!user || !pendingPaymentId) return;
-                // Updating Public Order
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', pendingPaymentId), { paid: true, paymentMethod: method });
                 setIsPaymentModalOpen(false); setPendingPaymentId(null);
                 addToast('Pago registrado');
@@ -1137,7 +1184,6 @@
                     isDanger: true,
                     onConfirm: async () => {
                         try {
-                            // Deleting from Public Orders
                             await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id));
                             addToast('Pedido eliminado', 'success');
                         } catch(e) { addToast('Error al eliminar', 'error'); }
@@ -1153,7 +1199,6 @@
                     isDanger: true,
                     onConfirm: async () => {
                         try {
-                            // Deleting from Public Expenses
                             await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', id));
                             addToast('Gasto eliminado', 'success');
                         } catch(e) { addToast('Error al eliminar', 'error'); }
@@ -1169,13 +1214,39 @@
                     isDanger: true,
                     onConfirm: async () => {
                         try {
-                            // Deleting from Public Incomes
                             await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'extra_incomes', id));
                             addToast('Ingreso eliminado', 'success');
                         } catch(e) { addToast('Error al eliminar', 'error'); }
                     }
                 });
             };
+
+            // ---- HELPER FOR MODAL RENDER ----
+            // Gets stock info including logic for when we are editing an existing order
+            // (we add back the quantity of the current order to the available stock to prevent locking the user out)
+            const getStockInfo = () => {
+                if (!form.productId) return { available: 0, hasIssue: false, product: null };
+                
+                const product = inventory.find(i => i.id === form.productId);
+                if (!product) return { available: 0, hasIssue: false, product: null };
+                
+                let available = parseInt(product.stock || 0);
+                
+                // If editing, add back the quantity from the original order so the user isn't blocked by their own reservation
+                if (editingId) {
+                    const originalOrder = orders.find(o => o.id === editingId);
+                    if (originalOrder && originalOrder.productId === form.productId) {
+                        available += parseInt(originalOrder.quantity || 1);
+                    }
+                }
+                
+                const reqQuantity = parseInt(form.quantity || 1);
+                const hasIssue = available < reqQuantity;
+                
+                return { available, hasIssue, product };
+            };
+
+            const stockInfo = getStockInfo();
 
             if (!isConfigured) return <ConfigErrorScreen />;
             if (isLocked) return <LoginScreen onLogin={handleAppUnlock} credentials={credentials} />;
@@ -1238,18 +1309,17 @@
                         </div>
                         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto sidebar-scrollbar">
                             <button onClick={() => setActiveTab('orders')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === 'orders' ? 'bg-white/10 text-white' : 'text-stone-400 hover:text-white hover:bg-white/5'}`}><Home size={20} /> Pedidos</button>
-                            <button onClick={() => setActiveTab('inventory')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === 'inventory' ? 'bg-white/10 text-white' : 'text-stone-400 hover:text-white hover:bg-white/5'}`}><Tag size={20} /> Lista Precios</button>
+                            <button onClick={() => setActiveTab('inventory')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === 'inventory' ? 'bg-white/10 text-white' : 'text-stone-400 hover:text-white hover:bg-white/5'}`}><Tag size={20} /> Inventario</button>
                             <button onClick={() => setActiveTab('debts')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === 'debts' ? 'bg-white/10 text-white' : 'text-stone-400 hover:text-white hover:bg-white/5'}`}><Receipt size={20} /> Deudas</button>
                             <button onClick={() => setActiveTab('finances')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === 'finances' ? 'bg-white/10 text-white' : 'text-stone-400 hover:text-white hover:bg-white/5'}`}><Wallet size={20} /> Finanzas</button>
                             <button onClick={() => setActiveTab('stats')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === 'stats' ? 'bg-white/10 text-white' : 'text-stone-400 hover:text-white hover:bg-white/5'}`}><BarChart3 size={20} /> Estadísticas</button>
                         </nav>
                         <div className="p-4 border-t border-stone-800 flex flex-col gap-3">
-                            <button onClick={() => { setEditingId(null); setForm({ client: '', detail: '', price: '', paid: false, delivered: false, important: false, date: new Date().toISOString().split('T')[0] }); setIsModalOpen(true); }} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-emerald-900/20 active:scale-95 transition-all flex items-center justify-center gap-2 group relative overflow-hidden">
+                            <button onClick={() => { setEditingId(null); setForm({ client: '', detail: '', price: '', quantity: 1, paid: false, delivered: false, important: false, date: new Date().toISOString().split('T')[0], productId: null }); setIsModalOpen(true); }} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-emerald-900/20 active:scale-95 transition-all flex items-center justify-center gap-2 group relative overflow-hidden">
                                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                                 <Plus size={20} className="relative z-10" /> <span className="relative z-10">Nuevo Pedido</span>
                             </button>
                             
-                            {/* FOOTER PREMIUM */}
                             <div className="mt-auto pt-4 border-t border-stone-800/30 flex flex-col gap-1">
                                 <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-stone-500 hover:text-white transition-colors py-3 rounded-xl hover:bg-white/5">
                                     <LogOut size={14} /> Cerrar Sesión
@@ -1321,7 +1391,10 @@
                                                         </div>
                                                     </div>
                                                 
-                                                    <p className="text-stone-600 text-sm mb-5 leading-relaxed pl-1">{order.detail}</p>
+                                                    <p className="text-stone-600 text-sm mb-5 leading-relaxed pl-1">
+                                                        {order.quantity && order.quantity > 1 && <span className="font-bold text-stone-800">{order.quantity}x </span>}
+                                                        {order.detail}
+                                                    </p>
                                                 
                                                     <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-dashed border-stone-100">
                                                         <div className="flex items-center gap-2 bg-stone-50 px-3 py-1.5 rounded-xl">
@@ -1370,18 +1443,27 @@
                                     </div>
                                     
                                     <div className="flex justify-between items-center">
-                                        <h3 className="font-bold text-lg">Lista de Precios</h3>
-                                        <button onClick={() => openInventoryModal()} className="bg-stone-900 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 shadow-md"><Plus size={16} /> Agregar</button>
+                                        <h3 className="font-bold text-lg">Inventario & Stock</h3>
+                                        <div className="flex gap-2">
+                                            <button onClick={printPriceList} className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-emerald-100 transition-colors"><Printer size={16} /> Imprimir PDF</button>
+                                            <button onClick={() => openInventoryModal()} className="bg-stone-900 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 shadow-md"><Plus size={16} /> Agregar</button>
+                                        </div>
                                     </div>
 
                                     <div className="space-y-3">
                                         {filteredInventory.map(item => (
                                             <div key={item.id} className="bg-white p-4 rounded-2xl border border-stone-100 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="bg-stone-50 p-2.5 rounded-xl text-stone-500"><Tag size={20} /></div>
+                                                    <div className={`p-2.5 rounded-xl ${parseInt(item.stock) > 0 ? 'bg-stone-50 text-stone-500' : 'bg-red-50 text-red-500'}`}>
+                                                        <Tag size={20} />
+                                                    </div>
                                                     <div>
                                                         <h4 className="font-bold text-stone-800 text-lg leading-tight">{item.name}</h4>
-                                                        {item.detail && <p className="text-sm text-stone-500 mt-1">{item.detail}</p>}
+                                                        <p className="text-sm text-stone-500 mt-1 flex items-center gap-2">
+                                                            {item.detail && <span>{item.detail}</span>}
+                                                            <span className="text-stone-300">|</span>
+                                                            <span className={`font-bold ${parseInt(item.stock) > 0 ? 'text-emerald-600' : 'text-red-500'}`}>Stock: {item.stock || 0}</span>
+                                                        </p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-4">
@@ -1398,11 +1480,11 @@
                                     
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6 pt-6 border-t border-stone-200">
                                         <div className="p-4 rounded-2xl border border-stone-200 bg-stone-50/50">
-                                            <p className="text-xs text-stone-400 font-bold uppercase mb-1">Total Items</p>
+                                            <p className="text-xs text-stone-400 font-bold uppercase mb-1">Total Unidades</p>
                                             <p className="text-2xl font-bold text-stone-800">{inventoryStats.totalItems}</p>
                                         </div>
                                         <div className="p-4 rounded-2xl border border-stone-200 bg-stone-50/50">
-                                            <p className="text-xs text-stone-400 font-bold uppercase mb-1">Valor Inventario</p>
+                                            <p className="text-xs text-stone-400 font-bold uppercase mb-1">Valor Inventario (Stock x Precio)</p>
                                             <p className="text-2xl font-bold text-stone-800">${inventoryStats.totalValue.toLocaleString()}</p>
                                         </div>
                                     </div>
@@ -1536,7 +1618,7 @@
                                         </div>
                                     </div>
 
-                                    {/* NEW STAT CARDS */}
+                                    {/* STAT CARDS */}
                                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                         <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm">
                                             <p className="text-xs text-stone-400 font-bold uppercase mb-1">Ticket Promedio</p>
@@ -1586,13 +1668,13 @@
                         </button>
                         <button onClick={() => setActiveTab('inventory')} className={`mobile-nav-item ${activeTab === 'inventory' ? 'active' : ''} pb-3 pt-2`}>
                             <Tag size={20} strokeWidth={activeTab === 'inventory' ? 2.5 : 2} />
-                            <span className="text-[10px]">Precios</span>
+                            <span className="text-[10px]">Inventario</span>
                         </button>
                         
                         {/* FAB CONTAINER - Lifted up */}
                         <div className="relative -top-5 mx-1">
                              <button 
-                                onClick={() => { setEditingId(null); setForm({ client: '', detail: '', price: '', paid: false, delivered: false, important: false, date: new Date().toISOString().split('T')[0] }); setIsModalOpen(true); }} 
+                                onClick={() => { setEditingId(null); setForm({ client: '', detail: '', price: '', quantity: 1, paid: false, delivered: false, important: false, date: new Date().toISOString().split('T')[0], productId: null }); setIsModalOpen(true); }} 
                                 className="h-14 w-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white shadow-xl shadow-emerald-200 active:scale-95 transition-transform border-4 border-white"
                             >
                                 <Plus size={28} />
@@ -1603,7 +1685,6 @@
                             <Receipt size={20} strokeWidth={activeTab === 'debts' ? 2.5 : 2} />
                             <span className="text-[10px]">Deudas</span>
                         </button>
-                         {/* Group Finances & Stats or put one? Let's put Finances. Stats can be top right */}
                         <button onClick={() => setActiveTab('finances')} className={`mobile-nav-item ${activeTab === 'finances' ? 'active' : ''} pb-3 pt-2`}>
                             <Wallet size={20} strokeWidth={activeTab === 'finances' ? 2.5 : 2} />
                             <span className="text-[10px]">Finanzas</span>
@@ -1614,11 +1695,63 @@
                     <Modal isOpen={isModalOpen} onClose={closeModal} title={editingId ? "Editar Pedido" : "Nuevo Pedido"}>
                         <form onSubmit={handleSaveOrder} className="space-y-5">
                             <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Fecha</label><input type="date" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl" value={form.date} onChange={e => setForm({...form, date: e.target.value})} /></div>
+                            
+                            {/* Inventory Selection */}
+                            <div className="space-y-1">
+                                <div className="flex justify-between items-center mb-1">
+                                    <label className="text-xs font-bold text-stone-400 uppercase">Seleccionar del Inventario</label>
+                                    {form.productId && (
+                                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${stockInfo.available > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
+                                            Stock disponible: {stockInfo.available}u
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="relative">
+                                    <select 
+                                        className={`w-full p-3 bg-stone-50 border rounded-xl appearance-none transition-all ${stockInfo.hasIssue ? 'border-red-300 ring-2 ring-red-100' : 'border-stone-200'}`}
+                                        value={form.productId || ""} 
+                                        onChange={handleSelectProduct}
+                                    >
+                                        <option value="">Seleccionar producto (Opcional)...</option>
+                                        {inventory.map(p => (
+                                            <option key={p.id} value={p.id}>
+                                                {p.name} (Stock: {p.stock}) - ${p.price}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400"><Boxes size={16}/></div>
+                                </div>
+                                
+                                {stockInfo.hasIssue && (
+                                    <div className="flex items-center gap-2 text-red-500 text-xs font-bold bg-red-50 p-2.5 rounded-xl border border-red-100 animate-in slide-in-from-top-2">
+                                        <AlertTriangle size={16} />
+                                        <span>No hay suficiente stock para la cantidad solicitada.</span>
+                                    </div>
+                                )}
+                            </div>
+
                             <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Cliente</label><input type="text" placeholder="Nombre..." autoFocus className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl" value={form.client} onChange={e => setForm({...form, client: e.target.value})} /></div>
                             <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Detalle</label><textarea rows={3} placeholder="Producto..." className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl" value={form.detail} onChange={e => setForm({...form, detail: e.target.value})} /></div>
-                            <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Precio</label><input type="number" placeholder="0.00" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={form.price} onChange={e => setForm({...form, price: e.target.value})} /></div>
+                            
+                            <div className="flex gap-4">
+                                <div className="space-y-1 flex-1">
+                                    <label className="text-xs font-bold text-stone-400 uppercase">Cantidad</label>
+                                    <input type="number" min="1" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={form.quantity} onChange={e => setForm({...form, quantity: e.target.value})} />
+                                </div>
+                                <div className="space-y-1 flex-[2]">
+                                    <label className="text-xs font-bold text-stone-400 uppercase">Precio Unitario</label>
+                                    <input type="number" placeholder="0.00" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={form.price} onChange={e => setForm({...form, price: e.target.value})} />
+                                </div>
+                            </div>
+
                             <div className="flex items-center gap-2 py-2"><button type="button" onClick={() => setForm({...form, important: !form.important})} className={`flex-1 py-3 px-4 rounded-xl border flex items-center justify-center gap-2 ${form.important ? 'bg-amber-50 border-amber-200 text-amber-600' : 'bg-white text-stone-400'}`}><Star size={18} fill={form.important ? "currentColor" : "none"} /> <span className="text-sm font-bold">Importante</span></button></div>
-                            <button type="submit" disabled={isSaving} className="w-full bg-stone-900 hover:bg-stone-800 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-70">{isSaving ? <Loader2 size={20} className="animate-spin" /> : (editingId ? 'Guardar Cambios' : 'Confirmar Pedido')}</button>
+                            <button 
+                                type="submit" 
+                                disabled={isSaving || stockInfo.hasIssue} 
+                                className={`w-full text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed transition-colors ${stockInfo.hasIssue ? 'bg-stone-400' : 'bg-stone-900 hover:bg-stone-800'}`}
+                            >
+                                {isSaving ? <Loader2 size={20} className="animate-spin" /> : (stockInfo.hasIssue ? 'Stock Insuficiente' : (editingId ? 'Guardar Cambios' : 'Confirmar Pedido'))}
+                            </button>
                         </form>
                     </Modal>
 
@@ -1659,7 +1792,10 @@
                         <form onSubmit={handleSaveInventory} className="space-y-5">
                             <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Producto</label><input type="text" placeholder="Ej: Mate Imperial" autoFocus className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl" value={inventoryForm.name} onChange={e => setInventoryForm({...inventoryForm, name: e.target.value})} /></div>
                             <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Detalle</label><input type="text" placeholder="Ej: Con virola de alpaca..." className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl" value={inventoryForm.detail} onChange={e => setInventoryForm({...inventoryForm, detail: e.target.value})} /></div>
-                            <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Precio</label><input type="number" placeholder="0.00" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={inventoryForm.price} onChange={e => setInventoryForm({...inventoryForm, price: e.target.value})} /></div>
+                            <div className="flex gap-4">
+                                <div className="space-y-1 flex-1"><label className="text-xs font-bold text-stone-400 uppercase">Precio</label><input type="number" placeholder="0.00" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={inventoryForm.price} onChange={e => setInventoryForm({...inventoryForm, price: e.target.value})} /></div>
+                                <div className="space-y-1 flex-1"><label className="text-xs font-bold text-stone-400 uppercase">Stock Inicial</label><input type="number" placeholder="0" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={inventoryForm.stock} onChange={e => setInventoryForm({...inventoryForm, stock: e.target.value})} /></div>
+                            </div>
                             <button type="submit" disabled={isSaving} className="w-full bg-stone-900 hover:bg-stone-800 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-70">{isSaving ? <Loader2 size={20} className="animate-spin" /> : (editingProductId ? 'Guardar Cambios' : 'Guardar Producto')}</button>
                         </form>
                     </Modal>
