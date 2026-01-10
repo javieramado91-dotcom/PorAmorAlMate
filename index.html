@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧉</text></svg>">
+    
     <title>Por Amor Al Mate - Gestión</title>
     
     <!-- Tailwind CSS -->
@@ -77,7 +80,7 @@
             MoreHorizontal, Sun, Cloud, CloudRain, ChevronLeft, 
             ChevronRight, Wind, CloudLightning, MapPin, Settings, Loader2,
             Wallet, ArrowUpRight, ArrowDownLeft, Banknote, CreditCard,
-            TrendingDown, Activity, Info, FileJson, LogOut, Lock, Shield, User, Wifi, WifiOff, Stethoscope, Coins, ShoppingBag, Minus, Layers, AlertTriangle, Tag, List, Receipt, CheckCircle2, Circle, Repeat, Truck, Phone, Mail, Code, ArrowUpCircle, ArrowDownCircle, Printer, Boxes, AlertOctagon, Split, Clock, Edit3
+            TrendingDown, Activity, Info, FileJson, LogOut, Lock, Shield, User, Wifi, WifiOff, Stethoscope, Coins, ShoppingBag, Minus, Layers, AlertTriangle, Tag, List, Receipt, CheckCircle2, Circle, Repeat, Truck, Phone, Mail, Code, ArrowUpCircle, ArrowDownCircle, Printer, Boxes, AlertOctagon, Split, Clock, Edit3, ShoppingCart, ToggleLeft, ToggleRight
         } from 'lucide-react';
 
         // --- FIREBASE SETUP ---
@@ -292,7 +295,7 @@
             if (!isOpen) return null;
             return (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 flex flex-col max-h-[85vh]">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 flex flex-col max-h-[85vh]">
                         <div className="flex justify-between items-center px-6 py-4 border-b border-stone-100 bg-stone-50/50 shrink-0">
                             <h3 className="font-bold text-lg text-stone-800">{title}</h3>
                             <button onClick={onClose} className="p-2 hover:bg-stone-200 rounded-full transition-colors text-stone-400 hover:text-stone-600"><X size={20} /></button>
@@ -456,9 +459,15 @@
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [editingId, setEditingId] = useState(null);
             
-            // Order Form
-            const [form, setForm] = useState({ client: '', detail: '', price: '', quantity: 1, paid: false, paymentMethod: null, delivered: false, important: false, date: '', productId: null });
-            
+            // Order Form - UPDATED FOR MULTIPLE ITEMS
+            const [form, setForm] = useState({ 
+                client: '', items: [], price: 0, paid: false, paymentMethod: null, 
+                delivered: false, important: false, date: '' 
+            });
+            // Sub-state for adding item to list
+            const [subItem, setSubItem] = useState({ productId: '', quantity: 1, unitPrice: 0, detail: '' });
+            const [isCustomItem, setIsCustomItem] = useState(false); // NEW STATE FOR MANUAL ITEM
+
             const [searchTerm, setSearchTerm] = useState('');
             
             // Payment Modal Logic updated for Mixed Payment
@@ -569,14 +578,34 @@
                 setToasts(prev => prev.filter(t => t.id !== id));
             };
 
+            // MODIFIED FOR MULTI-ITEM SUPPORT
             const openModal = (order = null) => {
                 setEditingId(order ? order.id : null);
                 const defaultDate = order ? order.date.split('T')[0] : new Date().toISOString().split('T')[0];
                 
-                setForm(order ? { ...order, date: defaultDate } : { 
-                    client: '', detail: '', price: '', quantity: 1, paid: false, paymentMethod: null, delivered: false, important: false, 
-                    date: defaultDate, productId: null
-                });
+                if (order) {
+                    // Normalize old orders to have an 'items' array if they don't
+                    let items = order.items || [];
+                    if (items.length === 0 && order.detail) {
+                        items = [{
+                            id: Date.now(), // temp id for UI list
+                            productId: order.productId || null,
+                            detail: order.detail,
+                            quantity: parseInt(order.quantity) || 1,
+                            unitPrice: order.price / (parseInt(order.quantity) || 1), // Estimate unit price
+                            total: order.price,
+                            name: order.detail // Backwards compat name
+                        }];
+                    }
+                    setForm({ ...order, date: defaultDate, items: items });
+                } else {
+                    setForm({ 
+                        client: '', items: [], price: 0, paid: false, paymentMethod: null, 
+                        delivered: false, important: false, date: defaultDate
+                    });
+                }
+                setSubItem({ productId: '', quantity: 1, unitPrice: 0, detail: '' }); // Reset sub-form
+                setIsCustomItem(false); // Reset to default mode
                 setIsModalOpen(true);
             };
             const closeModal = () => setIsModalOpen(false);
@@ -621,7 +650,7 @@
                 
                 const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
                 const unsubOrders = onSnapshot(query(ordersRef), (s) => {
-                    // Ordenar por fecha descendente (lo más nuevo arriba)
+                    // Ordenar por fecha descendente
                     const loaded = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(b.date) - new Date(a.date));
                     setOrders(loaded);
                     if (isFirstLoad.current && loaded.length > 0) { setCurrentDate(new Date(loaded[0].date)); isFirstLoad.current = false; }
@@ -668,7 +697,7 @@
                 if (orderFilter === 'pending_pay') matchesFilter = !o.paid;
                 if (orderFilter === 'pending_delivery') matchesFilter = !o.delivered;
                 if (orderFilter === 'delivered') matchesFilter = o.delivered;
-                if (orderFilter === 'important') matchesFilter = o.important; // Added filter logic for Favorites
+                if (orderFilter === 'important') matchesFilter = o.important;
 
                 return matchesDate && matchesSearch && matchesFilter;
             }).sort((a, b) => {
@@ -677,7 +706,6 @@
                     const dateB = b.deliveryDate ? new Date(b.deliveryDate) : new Date(b.date);
                     return dateB - dateA;
                 }
-                // Default sort (Date descending - includes time)
                 return new Date(b.date) - new Date(a.date);
             }), [orders, currentDate, searchTerm, orderFilter]);
 
@@ -728,19 +756,16 @@
                 const expenseMonth = monthExpenses.reduce((acc, e) => acc + e.amount, 0);
                 const netProfitMonth = incomeMonth - expenseMonth;
 
-                // Movements List logic update for mixed
-                // Se agrega 'source' para distinguir el origen del movimiento (pedido, gasto, ingreso)
                 const movements = [
                     ...monthOrders.map(o => {
                         let description = `Pedido: ${o.client} - ${o.detail}`;
                         if (o.paymentMethod === 'mixed' && o.paymentDetails) {
                             description += ` (E: $${(o.paymentDetails.cash || 0).toLocaleString()} / T: $${(o.paymentDetails.transfer || 0).toLocaleString()})`;
                         }
-                        
                         return { 
                             ...o, 
                             type: 'income', 
-                            source: 'order', // Identificador clave
+                            source: 'order',
                             description, 
                             amount: o.price, 
                             method: o.paymentMethod || 'cash',
@@ -908,22 +933,88 @@
                 }
             };
 
+            // ITEM LOGIC
             const handleSelectProduct = (e) => {
                 const prodId = e.target.value;
                 if (!prodId) {
-                    setForm(prev => ({ ...prev, productId: null }));
+                    setSubItem(prev => ({ ...prev, productId: '' }));
                     return;
                 }
                 const product = inventory.find(p => p.id === prodId);
                 if (product) {
-                    setForm(prev => ({
+                    setSubItem(prev => ({
                         ...prev,
                         productId: product.id,
-                        detail: `${product.name} ${product.detail || ''}`.trim(),
-                        price: product.price,
-                        category: identifyCategory(product.name)
+                        unitPrice: product.price,
+                        detail: product.name // Temp store name for display
                     }));
                 }
+            };
+
+            const handleAddItem = () => {
+                let newItem;
+                const qty = parseInt(subItem.quantity) || 1;
+
+                if (isCustomItem) {
+                    // Lógica para ítem manual
+                    if (!subItem.detail || !subItem.detail.trim() || !subItem.unitPrice || parseFloat(subItem.unitPrice) <= 0) {
+                        addToast('Completa nombre y precio válido', 'error');
+                        return;
+                    }
+                    newItem = {
+                        id: Date.now(),
+                        productId: null, // Sin ID de inventario
+                        name: subItem.detail,
+                        detail: 'Personalizado',
+                        quantity: qty,
+                        unitPrice: parseFloat(subItem.unitPrice),
+                        total: parseFloat(subItem.unitPrice) * qty
+                    };
+                } else {
+                    // Lógica existente para stock
+                    if (!subItem.productId) return;
+                    const product = inventory.find(p => p.id === subItem.productId);
+                    if (!product) return;
+                    newItem = {
+                        id: Date.now(),
+                        productId: product.id,
+                        name: product.name,
+                        detail: product.detail || '',
+                        quantity: qty,
+                        unitPrice: product.price,
+                        total: product.price * qty
+                    };
+                }
+
+                const updatedItems = [...form.items, newItem];
+                const updatedTotal = updatedItems.reduce((acc, item) => acc + item.total, 0);
+
+                // Auto generate detail summary
+                const summary = updatedItems.map(i => `${i.quantity}x ${i.name}`).join(', ');
+
+                setForm(prev => ({
+                    ...prev,
+                    items: updatedItems,
+                    price: updatedTotal,
+                    detail: summary
+                }));
+                
+                // Reset selection
+                setSubItem({ productId: '', quantity: 1, unitPrice: 0, detail: '' });
+                // No reseteamos isCustomItem para que pueda seguir agregando del mismo tipo si quiere
+            };
+
+            const handleRemoveItem = (itemId) => {
+                const updatedItems = form.items.filter(i => i.id !== itemId);
+                const updatedTotal = updatedItems.reduce((acc, item) => acc + item.total, 0);
+                const summary = updatedItems.map(i => `${i.quantity}x ${i.name}`).join(', ');
+                
+                setForm(prev => ({
+                    ...prev,
+                    items: updatedItems,
+                    price: updatedTotal,
+                    detail: summary
+                }));
             };
 
             const handleSaveOrder = async (e) => {
@@ -931,8 +1022,7 @@
                 if (isSaving) return;
 
                 if (!form.client.trim()) { addToast('Falta el nombre del cliente', 'error'); return; }
-                if (!form.detail.trim()) { addToast('Falta el detalle del pedido', 'error'); return; }
-                if (!form.price || parseFloat(form.price) <= 0) { addToast('El precio debe ser mayor a 0', 'error'); return; }
+                if (form.items.length === 0) { addToast('Agrega al menos un producto', 'error'); return; }
                 if (!user) { addToast(`Error: ${authErrorDetails || 'No conectado'}`, 'error'); return; }
 
                 setIsSaving(true);
@@ -951,16 +1041,24 @@
                     selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
                 }
 
+                // Determine dominant category and icons based on first item or fallback to generic
+                const firstItemName = form.items[0]?.name || form.detail;
+                
                 const orderData = {
-                    client: form.client, detail: form.detail, price: parseFloat(form.price) || 0,
-                    quantity: parseInt(form.quantity) || 1,
+                    client: form.client, 
+                    detail: form.detail, // Summary string
+                    items: form.items,   // New structure
+                    price: parseFloat(form.price) || 0,
+                    quantity: form.items.length, // Item count logic change
                     paid: form.paid, paymentMethod: form.paid ? (form.paymentMethod || 'cash') : null,
                     paymentDate: form.paid ? (form.paymentDate || selectedDate.toISOString()) : null,
                     delivered: form.delivered, important: form.important,
                     deliveryDate: form.delivered ? (form.deliveryDate || selectedDate.toISOString()) : null,
                     date: selectedDate.toISOString(),
-                    aiColor: generateColorFromText(form.detail), aiIcon: getSmartIconName(form.detail), category: identifyCategory(form.detail),
-                    productId: form.productId || null
+                    aiColor: generateColorFromText(firstItemName), 
+                    aiIcon: getSmartIconName(firstItemName), 
+                    category: identifyCategory(firstItemName),
+                    productId: null // Deprecated top level
                 };
                 
                 const batch = writeBatch(db);
@@ -973,13 +1071,15 @@
                     } else { 
                         batch.set(ordersRef, orderData);
 
-                        if (form.productId) {
-                            const productRef = doc(db, 'artifacts', appId, 'public', 'data', 'inventory', form.productId);
-                            const productDoc = await getDoc(productRef);
-                            if (productDoc.exists()) {
-                                const currentStock = parseInt(productDoc.data().stock) || 0;
-                                const qtyToDeduct = parseInt(form.quantity) || 1;
-                                batch.update(productRef, { stock: Math.max(0, currentStock - qtyToDeduct) });
+                        // Deduct stock for ALL items THAT HAVE A PRODUCT ID
+                        for (const item of form.items) {
+                            if (item.productId) {
+                                const productRef = doc(db, 'artifacts', appId, 'public', 'data', 'inventory', item.productId);
+                                const productDoc = await getDoc(productRef);
+                                if (productDoc.exists()) {
+                                    const currentStock = parseInt(productDoc.data().stock) || 0;
+                                    batch.update(productRef, { stock: Math.max(0, currentStock - item.quantity) });
+                                }
                             }
                         }
 
@@ -1062,7 +1162,6 @@
                     initialCash = mov.paymentDetails.cash;
                     initialTransf = mov.paymentDetails.transfer;
                 } else if (mov.source === 'order' && mov.method === 'mixed') {
-                     // Fallback if details missing but method is mixed (shouldn't happen but safe)
                      initialCash = 0;
                      initialTransf = mov.amount;
                 }
@@ -1084,11 +1183,9 @@
                 setIsSaving(true);
                 try {
                     const parts = editMovementForm.date.split('-');
-                    // Maintain similar time logic as creation
                     const selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0).toISOString();
 
                     if (editingMovement.source === 'order') {
-                        // For Orders: Only Date and Method (with details) can change
                         const updateData = {
                             paymentDate: selectedDate,
                             paymentMethod: editMovementForm.method
@@ -1110,7 +1207,6 @@
                         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', editingMovement.id), updateData);
 
                     } else {
-                        // For Expenses/Incomes: Date and Amount can change
                          const colName = editingMovement.source === 'expense' ? 'expenses' : 'extra_incomes';
                          await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', colName, editingMovement.id), {
                              date: selectedDate,
@@ -1127,7 +1223,6 @@
                 }
             };
 
-            // --- DELETION LOGIC (SMART) ---
             const handleDeleteMovement = (mov) => {
                 const isOrder = mov.source === 'order';
                 setConfirmModal({
@@ -1140,7 +1235,6 @@
                     onConfirm: async () => {
                         try {
                             if (isOrder) {
-                                // Revert Order to unpaid
                                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', mov.id), {
                                     paid: false,
                                     paymentDate: null,
@@ -1149,7 +1243,6 @@
                                 });
                                 addToast('Pago anulado. Pedido pendiente.', 'success');
                             } else {
-                                // Delete Expense/Income
                                 const colName = mov.source === 'expense' ? 'expenses' : 'extra_incomes';
                                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', colName, mov.id));
                                 addToast('Movimiento eliminado', 'success');
@@ -1194,8 +1287,6 @@
                     setMixedAmounts({ cash: Math.max(0, total - numericVal), transfer: rawValue });
                  }
             };
-
-            // ... (Rest of existing logic for Inventory, Debts, etc. kept as is) ...
 
             const openInventoryModal = (product = null) => {
                 if (product) {
@@ -1410,22 +1501,6 @@
                 });
             };
 
-            const getStockInfo = () => {
-                if (!form.productId) return { available: 0, hasIssue: false, product: null };
-                const product = inventory.find(i => i.id === form.productId);
-                if (!product) return { available: 0, hasIssue: false, product: null };
-                let available = parseInt(product.stock || 0);
-                if (editingId) {
-                    const originalOrder = orders.find(o => o.id === editingId);
-                    if (originalOrder && originalOrder.productId === form.productId) { available += parseInt(originalOrder.quantity || 1); }
-                }
-                const reqQuantity = parseInt(form.quantity || 1);
-                const hasIssue = available < reqQuantity;
-                return { available, hasIssue, product };
-            };
-
-            const stockInfo = getStockInfo();
-
             if (!isConfigured) return <ConfigErrorScreen />;
             if (isLocked) return <LoginScreen onLogin={handleAppUnlock} credentials={credentials} />;
             if (isAuthLoading) return <div className="h-full w-full flex flex-col items-center justify-center bg-[#FAFAF9] text-stone-500 gap-4"><Loader2 size={40} className="animate-spin text-[#5D8C57]" /><p className="font-medium animate-pulse">Cargando datos...</p></div>;
@@ -1538,7 +1613,7 @@
                             <button onClick={() => setActiveTab('stats')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === 'stats' ? 'bg-white/10 text-white' : 'text-stone-400 hover:text-white hover:bg-white/5'}`}><BarChart3 size={20} /> Estadísticas</button>
                         </nav>
                         <div className="p-4 border-t border-stone-800 flex flex-col gap-3">
-                            <button onClick={() => { setEditingId(null); setForm({ client: '', detail: '', price: '', quantity: 1, paid: false, delivered: false, important: false, date: new Date().toISOString().split('T')[0], productId: null }); setIsModalOpen(true); }} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-emerald-900/20 active:scale-95 transition-all flex items-center justify-center gap-2 group relative overflow-hidden">
+                            <button onClick={() => openModal()} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-emerald-900/20 active:scale-95 transition-all flex items-center justify-center gap-2 group relative overflow-hidden">
                                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                                 <Plus size={20} className="relative z-10" /> <span className="relative z-10">Nuevo Pedido</span>
                             </button>
@@ -1596,10 +1671,13 @@
                                                         <div className="flex gap-1">
                                                              <button onClick={() => toggle(order.id, 'important')} className={`p-2 rounded-xl transition-all ${order.important ? 'text-amber-400 bg-amber-50' : 'text-stone-300 hover:bg-stone-100 hover:text-stone-500'}`}><Star size={18} fill={order.important ? "currentColor" : "none"} /></button>
                                                              <div className="h-8 w-px bg-stone-100 mx-1"></div>
-                                                             <button onClick={() => { setEditingId(order.id); setForm(order); setIsModalOpen(true); }} className="p-2 text-stone-400 hover:text-stone-800 hover:bg-stone-50 rounded-xl transition-colors"><Pencil size={18} /></button>
+                                                             <button onClick={() => openModal(order)} className="p-2 text-stone-400 hover:text-stone-800 hover:bg-stone-50 rounded-xl transition-colors"><Pencil size={18} /></button>
                                                         </div>
                                                     </div>
-                                                    <p className="text-stone-600 text-sm mb-5 leading-relaxed pl-1">{order.quantity && order.quantity > 1 && <span className="font-bold text-stone-800">{order.quantity}x </span>}{order.detail}</p>
+                                                    <p className="text-stone-600 text-sm mb-5 leading-relaxed pl-1">
+                                                        {order.detail}
+                                                        {order.items && order.items.length > 1 && <span className="text-xs text-stone-400 block mt-1 italic">({order.items.length} productos)</span>}
+                                                    </p>
                                                     <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-dashed border-stone-100">
                                                         <div className="flex items-center gap-2 bg-stone-50 px-3 py-1.5 rounded-xl">
                                                              <span className="text-lg font-black text-stone-800">${order.price.toLocaleString()}</span>
@@ -1640,7 +1718,8 @@
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6 pt-6 border-t border-stone-200"><div className="p-4 rounded-2xl border border-stone-200 bg-stone-50/50"><p className="text-xs text-stone-400 font-bold uppercase mb-1">Total Unidades</p><p className="text-2xl font-bold text-stone-800">{inventoryStats.totalItems}</p></div><div className="p-4 rounded-2xl border border-stone-200 bg-stone-50/50"><p className="text-xs text-stone-400 font-bold uppercase mb-1">Valor Inventario (Stock x Precio)</p><p className="text-2xl font-bold text-stone-800">${inventoryStats.totalValue.toLocaleString()}</p></div></div>
                                 </div>
                             )}
-
+                            
+                            {/* ... (Existing Debts, Finances, Stats tabs logic kept same) ... */}
                             {activeTab === 'debts' && (
                                 <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                                     <div className="flex items-center justify-between"><div><h3 className="font-bold text-lg text-stone-800">Deudas de {monthLabel}</h3><p className="text-sm text-stone-500">Control de pagos mensuales</p></div><div className="flex gap-2"><button onClick={() => setIsDebtStatsOpen(true)} className="p-2 bg-stone-100 rounded-xl text-stone-500 hover:text-stone-800 transition-colors"><BarChart3 size={20} /></button><button onClick={() => openDebtModal()} className="bg-stone-900 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 shadow-md"><Plus size={16} /> Agregar Deuda</button></div></div>
@@ -1711,25 +1790,122 @@
                     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 px-0 pb-safe pt-1 z-50 flex justify-between items-end shadow-[0_-4px_15px_-3px_rgba(0,0,0,0.1)]">
                         <button onClick={() => setActiveTab('orders')} className={`mobile-nav-item ${activeTab === 'orders' ? 'active' : ''} pb-3 pt-2`}><Home size={20} strokeWidth={activeTab === 'orders' ? 2.5 : 2} /><span className="text-[10px]">Pedidos</span></button>
                         <button onClick={() => setActiveTab('inventory')} className={`mobile-nav-item ${activeTab === 'inventory' ? 'active' : ''} pb-3 pt-2`}><Tag size={20} strokeWidth={activeTab === 'inventory' ? 2.5 : 2} /><span className="text-[10px]">Inventario</span></button>
-                        <div className="relative -top-5 mx-1"><button onClick={() => { setEditingId(null); setForm({ client: '', detail: '', price: '', quantity: 1, paid: false, delivered: false, important: false, date: new Date().toISOString().split('T')[0], productId: null }); setIsModalOpen(true); }} className="h-14 w-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white shadow-xl shadow-emerald-200 active:scale-95 transition-transform border-4 border-white"><Plus size={28} /></button></div>
+                        <div className="relative -top-5 mx-1"><button onClick={() => openModal()} className="h-14 w-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white shadow-xl shadow-emerald-200 active:scale-95 transition-transform border-4 border-white"><Plus size={28} /></button></div>
                         <button onClick={() => setActiveTab('debts')} className={`mobile-nav-item ${activeTab === 'debts' ? 'active' : ''} pb-3 pt-2`}><Receipt size={20} strokeWidth={activeTab === 'debts' ? 2.5 : 2} /><span className="text-[10px]">Deudas</span></button>
                         <button onClick={() => setActiveTab('finances')} className={`mobile-nav-item ${activeTab === 'finances' ? 'active' : ''} pb-3 pt-2`}><Wallet size={20} strokeWidth={activeTab === 'finances' ? 2.5 : 2} /><span className="text-[10px]">Finanzas</span></button>
                     </div>
 
-                    {/* EXISTING MODALS */}
+                    {/* NEW MODAL DESIGN FOR MULTI-ITEM ORDERS */}
                     <Modal isOpen={isModalOpen} onClose={closeModal} title={editingId ? "Editar Pedido" : "Nuevo Pedido"}>
                         <form onSubmit={handleSaveOrder} className="space-y-5">
-                            <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Fecha</label><input type="date" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl" value={form.date} onChange={e => setForm({...form, date: e.target.value})} /></div>
-                            <div className="space-y-1">
-                                <div className="flex justify-between items-center mb-1"><label className="text-xs font-bold text-stone-400 uppercase">Seleccionar del Inventario</label>{form.productId && (<span className={`text-xs font-bold px-2 py-0.5 rounded-full ${stockInfo.available > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>Stock disponible: {stockInfo.available}u</span>)}</div>
-                                <div className="relative"><select className={`w-full p-3 bg-stone-50 border rounded-xl appearance-none transition-all ${stockInfo.hasIssue ? 'border-red-300 ring-2 ring-red-100' : 'border-stone-200'}`} value={form.productId || ""} onChange={handleSelectProduct}><option value="">Seleccionar producto (Opcional)...</option>{inventory.map(p => (<option key={p.id} value={p.id}>{p.name} (Stock: {p.stock}) - ${p.price}</option>))}</select><div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400"><Boxes size={16}/></div></div>
-                                {stockInfo.hasIssue && (<div className="flex items-center gap-2 text-red-500 text-xs font-bold bg-red-50 p-2.5 rounded-xl border border-red-100 animate-in slide-in-from-top-2"><AlertTriangle size={16} /><span>No hay suficiente stock para la cantidad solicitada.</span></div>)}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Fecha</label><input type="date" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm" value={form.date} onChange={e => setForm({...form, date: e.target.value})} /></div>
+                                <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Cliente</label><input type="text" placeholder="Nombre..." autoFocus className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm font-bold" value={form.client} onChange={e => setForm({...form, client: e.target.value})} /></div>
                             </div>
-                            <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Cliente</label><input type="text" placeholder="Nombre..." autoFocus className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl" value={form.client} onChange={e => setForm({...form, client: e.target.value})} /></div>
-                            <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Detalle</label><textarea rows={3} placeholder="Producto..." className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl" value={form.detail} onChange={e => setForm({...form, detail: e.target.value})} /></div>
-                            <div className="flex gap-4"><div className="space-y-1 flex-1"><label className="text-xs font-bold text-stone-400 uppercase">Cantidad</label><input type="number" min="1" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={form.quantity} onChange={e => setForm({...form, quantity: e.target.value})} onFocus={e => e.target.select()} /></div><div className="space-y-1 flex-[2]"><label className="text-xs font-bold text-stone-400 uppercase">Precio Unitario</label><input type="number" placeholder="0.00" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-mono" value={form.price} onChange={e => setForm({...form, price: e.target.value})} onFocus={e => e.target.select()} /></div></div>
-                            <div className="flex items-center gap-2 py-2"><button type="button" onClick={() => setForm({...form, important: !form.important})} className={`flex-1 py-3 px-4 rounded-xl border flex items-center justify-center gap-2 ${form.important ? 'bg-amber-50 border-amber-200 text-amber-600' : 'bg-white text-stone-400'}`}><Star size={18} fill={form.important ? "currentColor" : "none"} /> <span className="text-sm font-bold">Importante</span></button></div>
-                            <button type="submit" disabled={isSaving || stockInfo.hasIssue} className={`w-full text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed transition-colors ${stockInfo.hasIssue ? 'bg-stone-400' : 'bg-stone-900 hover:bg-stone-800'}`}>{isSaving ? <Loader2 size={20} className="animate-spin" /> : (stockInfo.hasIssue ? 'Stock Insuficiente' : (editingId ? 'Guardar Cambios' : 'Confirmar Pedido'))}</button>
+
+                            {/* ITEM LIST AREA */}
+                            <div className="bg-stone-50 rounded-2xl p-4 border border-stone-200">
+                                <div className="flex justify-between items-center mb-3">
+                                    <h4 className="text-xs font-bold text-stone-500 uppercase flex items-center gap-1"><ShoppingCart size={14} /> Carrito ({form.items.length})</h4>
+                                    <span className="text-lg font-black text-stone-800">${parseFloat(form.price).toLocaleString()}</span>
+                                </div>
+                                
+                                {form.items.length > 0 ? (
+                                    <div className="space-y-2 mb-4 max-h-40 overflow-y-auto custom-scrollbar pr-1">
+                                        {form.items.map((item, idx) => (
+                                            <div key={item.id || idx} className="bg-white p-2.5 rounded-xl border border-stone-100 flex items-center justify-between shadow-sm">
+                                                <div className="flex-1">
+                                                    <p className="font-bold text-sm text-stone-800 leading-tight">{item.name}</p>
+                                                    <p className="text-[10px] text-stone-400">{item.quantity} x ${item.unitPrice.toLocaleString()}</p>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <span className="font-bold text-sm text-stone-900">${item.total.toLocaleString()}</span>
+                                                    <button type="button" onClick={() => handleRemoveItem(item.id)} className="text-stone-300 hover:text-red-500 p-1"><X size={16} /></button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-6 text-stone-400 text-sm border-2 border-dashed border-stone-200 rounded-xl mb-4">
+                                        Carrito vacío
+                                    </div>
+                                )}
+
+                                {/* ADD ITEM FORM */}
+                                <div className="pt-3 border-t border-stone-200">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="text-[10px] font-bold text-stone-400 uppercase block">Agregar Ítem</label>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => { setIsCustomItem(!isCustomItem); setSubItem({ productId: '', quantity: 1, unitPrice: 0, detail: '' }); }}
+                                            className="text-[10px] font-bold text-emerald-600 hover:text-emerald-700 underline decoration-dashed transition-colors"
+                                        >
+                                            {isCustomItem ? 'Seleccionar del Stock' : 'Agregar Manual / Servicio'}
+                                        </button>
+                                    </div>
+
+                                    <div className="flex gap-2 items-end">
+                                        {isCustomItem ? (
+                                            <>
+                                                <div className="flex-[2] space-y-1">
+                                                     <input 
+                                                        type="text" 
+                                                        placeholder="Descripción..." 
+                                                        className="w-full p-2.5 bg-white border border-stone-200 rounded-xl text-sm"
+                                                        value={subItem.detail || ''}
+                                                        onChange={e => setSubItem({...subItem, detail: e.target.value})}
+                                                     />
+                                                </div>
+                                                <div className="flex-1 space-y-1">
+                                                     <input 
+                                                        type="number" 
+                                                        placeholder="Precio" 
+                                                        className="w-full p-2.5 bg-white border border-stone-200 rounded-xl text-sm font-mono"
+                                                        value={subItem.unitPrice || ''}
+                                                        onChange={e => setSubItem({...subItem, unitPrice: e.target.value})}
+                                                     />
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="relative flex-[3]">
+                                                <select 
+                                                    className="w-full p-2.5 bg-white border border-stone-200 rounded-xl text-sm appearance-none pr-8" 
+                                                    value={subItem.productId} 
+                                                    onChange={handleSelectProduct}
+                                                >
+                                                    <option value="">Seleccionar...</option>
+                                                    {inventory.map(p => (<option key={p.id} value={p.id}>{p.name}</option>))}
+                                                </select>
+                                                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400"><Boxes size={14}/></div>
+                                            </div>
+                                        )}
+
+                                        <input 
+                                            type="number" min="1" 
+                                            className="w-16 p-2.5 bg-white border border-stone-200 rounded-xl text-sm text-center font-mono" 
+                                            value={subItem.quantity} 
+                                            onChange={e => setSubItem({...subItem, quantity: e.target.value})}
+                                            placeholder="Cant"
+                                        />
+                                        <button 
+                                            type="button" 
+                                            onClick={handleAddItem}
+                                            disabled={isCustomItem ? (!subItem.detail || !subItem.unitPrice) : !subItem.productId}
+                                            className="bg-emerald-600 hover:bg-emerald-500 text-white p-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                                        >
+                                            <Plus size={20} />
+                                        </button>
+                                    </div>
+                                    {subItem.unitPrice > 0 && subItem.quantity > 0 && (
+                                        <p className="text-[10px] text-right mt-1 text-emerald-600 font-bold">
+                                            Subtotal: ${(subItem.unitPrice * subItem.quantity).toLocaleString()}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 py-1"><button type="button" onClick={() => setForm({...form, important: !form.important})} className={`flex-1 py-3 px-4 rounded-xl border flex items-center justify-center gap-2 ${form.important ? 'bg-amber-50 border-amber-200 text-amber-600' : 'bg-white text-stone-400'}`}><Star size={18} fill={form.important ? "currentColor" : "none"} /> <span className="text-sm font-bold">Importante</span></button></div>
+                            <button type="submit" disabled={isSaving || form.items.length === 0} className={`w-full text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed transition-colors ${form.items.length === 0 ? 'bg-stone-400' : 'bg-stone-900 hover:bg-stone-800'}`}>{isSaving ? <Loader2 size={20} className="animate-spin" /> : (editingId ? 'Guardar Cambios' : 'Confirmar Pedido')}</button>
                         </form>
                     </Modal>
 
