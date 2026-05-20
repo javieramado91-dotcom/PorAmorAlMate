@@ -2009,14 +2009,21 @@
                                             </>
                                         ) : (
                                             <div className="relative flex-[3]">
-                                                <select 
-                                                    className="w-full p-2.5 bg-white border border-stone-200 rounded-xl text-sm appearance-none pr-8" 
-                                                    value={subItem.productId} 
-                                                    onChange={handleSelectProduct}
-                                                >
-                                                    <option value="">Seleccionar...</option>
-                                                    {inventory.map(p => (<option key={p.id} value={p.id}>{p.name}</option>))}
-                                                </select>
+                                              <select 
+													className="w-full p-2.5 bg-white border border-stone-200 rounded-xl text-sm appearance-none pr-8" 
+													value={subItem.productId} 
+													onChange={handleSelectProduct}
+												>
+												<option value="">Seleccionar...</option>
+													{inventory
+													.filter(p => (parseInt(p.stock) || 0) > 0)
+													.map(p => (
+													<option key={p.id} value={p.id}>
+													{p.name} ({p.stock} u. disponibles)
+												</option>
+											))
+										}
+											</select>
                                                 <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400"><Boxes size={14}/></div>
                                             </div>
                                         )}
