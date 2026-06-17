@@ -246,15 +246,158 @@
             </svg>
         );
 
-        const SmartIcon = ({ iconName, color, detail }) => {
+        // Mate gourd realista
+        const MateGourIcon = ({ size = 24, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                {/* cuerpo del mate */}
+                <path d="M8 8 C5 9 4 12 4 14 C4 18 7 21 12 21 C17 21 20 18 20 14 C20 12 19 9 16 8 Z"/>
+                {/* cuello */}
+                <path d="M9 8 C9 6 10 5 12 5 C14 5 15 6 15 8"/>
+                {/* boca */}
+                <ellipse cx="12" cy="5" rx="3" ry="1.2"/>
+                {/* bombilla */}
+                <line x1="12" y1="4" x2="17" y2="1"/>
+                {/* detalle lateral */}
+                <path d="M7 13 C7 11 8.5 10 12 10" strokeWidth="1" opacity="0.5"/>
+            </svg>
+        );
+        // Bombilla detallada
+        const BombillaIcon = ({ size = 24, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                {/* caño */}
+                <line x1="7" y1="22" x2="17" y2="4"/>
+                {/* filtro abombado en la punta */}
+                <ellipse cx="7.5" cy="21" rx="3" ry="1.5" transform="rotate(-25 7.5 21)"/>
+                {/* detalle caño */}
+                <line x1="9" y1="18" x2="15" y2="8" strokeWidth="2.5" opacity="0.15"/>
+                {/* boquilla */}
+                <rect x="15.5" y="2" width="2.5" height="4" rx="1.2" transform="rotate(25 16.7 4)"/>
+            </svg>
+        );
+        // Termo con tapa
+        const ThermoIcon = ({ size = 24, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                {/* tapa */}
+                <rect x="9" y="1" width="6" height="3" rx="1"/>
+                {/* cuello */}
+                <path d="M9 4 L8 6 L16 6 L15 4"/>
+                {/* cuerpo */}
+                <rect x="7" y="6" width="10" height="15" rx="3"/>
+                {/* línea reflejo */}
+                <line x1="10" y1="9" x2="10" y2="18" strokeWidth="1" opacity="0.35"/>
+                {/* base */}
+                <path d="M8 21 h8" strokeWidth="2"/>
+            </svg>
+        );
+        // Grabado laser
+        const LaserIcon = ({ size = 24, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                {/* cabezal laser */}
+                <rect x="8" y="1" width="8" height="5" rx="1.5"/>
+                <line x1="12" y1="6" x2="12" y2="10"/>
+                {/* rayo laser */}
+                <path d="M12 10 L8 20" strokeWidth="1.5"/>
+                <path d="M12 10 L16 20" strokeWidth="1" opacity="0.4"/>
+                {/* pieza grabada */}
+                <rect x="4" y="18" width="16" height="4" rx="1"/>
+                {/* brillos del grabado */}
+                <line x1="8" y1="20" x2="16" y2="20" strokeWidth="1" opacity="0.5"/>
+            </svg>
+        );
+        // Morral/bolso cruzado
+        const BagIcon = ({ size = 24, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                {/* cuerpo */}
+                <rect x="4" y="8" width="16" height="13" rx="2.5"/>
+                {/* asa superior */}
+                <path d="M8 8 V5 Q12 2 16 5 V8"/>
+                {/* bolsillo frontal */}
+                <rect x="7" y="13" width="10" height="5" rx="1.5"/>
+                {/* cierre bolsillo */}
+                <line x1="12" y1="13" x2="12" y2="18"/>
+            </svg>
+        );
+        // Estuche/caja
+        const EstucheIcon = ({ size = 24, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                {/* tapa */}
+                <path d="M3 9 L12 5 L21 9 L12 13 Z"/>
+                {/* cuerpo */}
+                <path d="M3 9 L3 18 Q3 20 5 20 L19 20 Q21 20 21 18 L21 9"/>
+                {/* líneas */}
+                <line x1="12" y1="13" x2="12" y2="20"/>
+            </svg>
+        );
+        // Pulsera
+        const BraceletIcon = ({ size = 24, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <circle cx="12" cy="12" r="7"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="12" cy="5" r="1.2" fill="currentColor"/>
+                <circle cx="17.95" cy="8.5" r="1.2" fill="currentColor"/>
+                <circle cx="17.95" cy="15.5" r="1.2" fill="currentColor"/>
+                <circle cx="12" cy="19" r="1.2" fill="currentColor"/>
+                <circle cx="6.05" cy="15.5" r="1.2" fill="currentColor"/>
+                <circle cx="6.05" cy="8.5" r="1.2" fill="currentColor"/>
+            </svg>
+        );
+        // Canasta/set regalo
+        const BasketIcon = ({ size = 24, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                {/* asa */}
+                <path d="M7 10 Q7 4 12 4 Q17 4 17 10"/>
+                {/* cuerpo */}
+                <path d="M3 10 h18 L19 20 Q19 21 18 21 H6 Q5 21 5 20 Z"/>
+                {/* líneas tejido */}
+                <line x1="3" y1="14" x2="21" y2="14" strokeWidth="1" opacity="0.5"/>
+                <line x1="7" y1="10" x2="5" y2="21" strokeWidth="1" opacity="0.5"/>
+                <line x1="12" y1="10" x2="12" y2="21" strokeWidth="1" opacity="0.5"/>
+                <line x1="17" y1="10" x2="19" y2="21" strokeWidth="1" opacity="0.5"/>
+            </svg>
+        );
+        // Yerba / hoja mate
+        const YerbaIcon = ({ size = 24, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <path d="M12 21 C12 21 4 16 4 9 C4 5 7.5 2 12 2 C16.5 2 20 5 20 9 C20 16 12 21 12 21Z"/>
+                <line x1="12" y1="21" x2="12" y2="9"/>
+                <path d="M12 13 L8 10" strokeWidth="1.2" opacity="0.7"/>
+                <path d="M12 16 L16 13" strokeWidth="1.2" opacity="0.7"/>
+                <path d="M12 10 L16 7" strokeWidth="1.2" opacity="0.7"/>
+            </svg>
+        );
+
+        const PRODUCT_ICON_MAP = [
+            { keys: ['bombilla', 'pico de loro', 'pico loro', 'bombill'], icon: BombillaIcon, color: '#b8860b' },
+            { keys: ['termo'], icon: ThermoIcon, color: '#2563eb' },
+            { keys: ['grabado', 'laser', 'láser', 'grabacion', 'grabación', 'personaliz', 'grabado simple'], icon: LaserIcon, color: '#7c3aed' },
+            { keys: ['yerba', 'canarias', 'rosamonte', 'playadito', 'nobleza', 'taragui'], icon: YerbaIcon, color: '#15803d' },
+            { keys: ['canasta', 'set ', 'kit ', 'regalo', 'combo'], icon: BasketIcon, color: '#d97706' },
+            { keys: ['morral', 'bolso', 'mochila'], icon: BagIcon, color: '#0891b2' },
+            { keys: ['estuche', 'porta', 'funda'], icon: EstucheIcon, color: '#64748b' },
+            { keys: ['pulsera', 'accesorio', 'collar', 'cierra bolsa', 'cierrabols'], icon: BraceletIcon, color: '#db2777' },
+            { keys: ['imperial', 'calabaza', 'torpedo', 'camionero', 'criollo', 'madera', 'cuero', 'palo santo', 'algarrobo', 'baldo', 'mate'], icon: MateGourIcon, color: '#7c5c3b' },
+        ];
+
+        const getProductIconData = (text) => {
+            if (!text) return { icon: MateGourIcon, color: '#7c5c3b' };
+            const t = text.toLowerCase();
+            for (const entry of PRODUCT_ICON_MAP) {
+                if (entry.keys.some(k => t.includes(k))) return { icon: entry.icon, color: entry.color };
+            }
+            return { icon: MateGourIcon, color: '#7c5c3b' };
+        };
+
+        const SmartIcon = ({ iconName, color, detail, productName }) => {
+            // Primero intentamos resolver por nombre de producto real, luego por iconName legacy
+            const resolved = getProductIconData(productName || detail || '');
+            const IconComponent = resolved.icon;
+            const resolvedColor = resolved.color;
             const hash = getHash(detail);
-            const IconMap = { 'pen-tool': Zap, 'leaf': Leaf, 'flask-conical': Package, 'crown': Award, 'mate': MateIcon };
-            const IconComponent = IconMap[iconName] || MateIcon;
             return (
                 <div className="relative w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden shadow-sm transition-transform hover:scale-105 duration-300 bg-white border border-stone-100">
-                    <div className="absolute inset-0 opacity-20" style={{ backgroundColor: color }}></div>
-                    <GenerativePattern hash={hash} color={color} />
-                    <div className="relative z-10 drop-shadow-sm" style={{ color: color }}>
+                    <div className="absolute inset-0 opacity-15" style={{ backgroundColor: resolvedColor }}></div>
+                    <GenerativePattern hash={hash} color={resolvedColor} />
+                    <div className="relative z-10 drop-shadow-sm" style={{ color: resolvedColor }}>
                         <IconComponent size={26} strokeWidth={2} />
                     </div>
                 </div>
@@ -270,17 +413,21 @@
             if (t.includes('bombilla')) return 'Accesorios';
             if (t.includes('termo') || t.includes('set') || t.includes('canasta')) return 'Sets';
             if (t.includes('yerba')) return 'Consumibles';
+            if (t.includes('grabado') || t.includes('laser')) return 'Grabados';
+            if (t.includes('morral') || t.includes('bolso')) return 'Bolsos';
+            if (t.includes('pulsera')) return 'Accesorios';
             return 'Varios';
         };
 
         const getSmartIconName = (description) => {
+            // Mantenemos por compatibilidad con pedidos viejos, pero ya no se usa para renderizar
             if (!description) return 'mate';
-            const lowerDesc = description.toLowerCase();
-            if (lowerDesc.includes('bombilla')) return 'pen-tool'; 
-            if (lowerDesc.includes('yerba')) return 'leaf';
-            if (lowerDesc.includes('termo') || lowerDesc.includes('set')) return 'flask-conical';
-            if (lowerDesc.includes('imperial') || lowerDesc.includes('camionero')) return 'crown';
-            return 'mate'; 
+            const t = description.toLowerCase();
+            if (t.includes('bombilla')) return 'pen-tool';
+            if (t.includes('yerba')) return 'leaf';
+            if (t.includes('termo') || t.includes('set')) return 'flask-conical';
+            if (t.includes('imperial') || t.includes('camionero')) return 'crown';
+            return 'mate';
         };
 
         const generateColorFromText = (text) => {
@@ -341,60 +488,202 @@
             );
         };
 
+        const MATE_PHRASES = [
+            "El mate no se le niega a nadie.",
+            "La vida es como el mate: hay que saber cebarla.",
+            "Mate en mano, problemas volando.",
+            "Unos verdes para aclarar las ideas.",
+            "Charla que va, mate que viene.",
+            "El primer mate siempre es el más esperado.",
+            "No hay problema que no se resuelva con un buen mate.",
+            "Cebando sueños, cosechando momentos.",
+            "El mate une lo que la distancia separa.",
+            "Un mate compartido vale más que mil palabras.",
+            "El amargo te despierta; el dulce te abraza.",
+            "Rueda de mate, rueda de vida.",
+            "Mate lavado, pero con ganas. Así estamos.",
+            "El que ceba mal, sabe mucho pero entiende poco.",
+            "Con mate y buena gente, el día rinde diferente.",
+            "No es lo mismo tomar mate que compartirlo.",
+            "El mate es el abrazo que entra por la boca.",
+            "Cada cebada tiene su historia.",
+            "Sin mate no hay reunión que valga.",
+            "El fondo del termo siempre guarda el mejor mate.",
+            "Mate amargo para los que piensan en serio.",
+            "La bombilla no miente: el mate habla solo.",
+            "Hay que saber cuando cambiar la yerba y cuando cambiar de actitud.",
+            "El mate frío también se toma, si hay buena compañía.",
+            "Un buen mate es la respuesta antes de que llegue la pregunta.",
+            "La yerba nueva siempre promete más de lo que cumple.",
+            "El mate no entiende de apuros.",
+            "Ceban mal los que tienen prisa.",
+            "Antes de hablar, un mate. Antes de decidir, otro.",
+            "El mate es la excusa perfecta para quedarse un rato más.",
+            "Compartir el mate es compartir un pedacito de uno.",
+            "No hay frío que un buen mate no ablande.",
+            "El mate dice lo que el corazón no puede.",
+            "Día sin mate, día a medias.",
+            "El mate tiene su ritual, como todo lo que vale.",
+            "La yerba se asienta, las ideas también.",
+            "Mate es cultura, identidad, y algo más que agua caliente.",
+            "El que no tomó mate de madrugada, no sabe lo que es la madrugada.",
+            "Un mate bien cebado es un acto de amor.",
+            "La pava siempre lista. El mate, siempre presente.",
+            "Primero el mate, después los problemas.",
+            "El silencio con mate es la mejor conversación.",
+            "No importa cómo empieza el día, si empieza con mate.",
+            "El mate no juzga. Solo acompaña.",
+            "Con el mate se aprende a esperar.",
+            "Hay que tener paciencia con la yerba y con la vida.",
+            "El mate es el GPS del alma gaucha.",
+            "Cebar es un arte; tomar, una filosofía.",
+            "El mate se comparte. El estrés, no.",
+            "Un mate al día mantiene al malhumor a distancia.",
+        ];
+
+        const getWeatherGradient = (weathercode, temp) => {
+            if (weathercode >= 95) return 'from-slate-800 via-slate-700 to-stone-800';
+            if (weathercode >= 51) return 'from-slate-700 via-stone-700 to-slate-800';
+            if (weathercode >= 1 && weathercode <= 3) return 'from-stone-700 via-stone-800 to-slate-700';
+            if (temp >= 30) return 'from-orange-900 via-stone-900 to-stone-800';
+            if (temp <= 5) return 'from-blue-900 via-stone-900 to-slate-900';
+            return 'from-stone-900 via-stone-800 to-emerald-950';
+        };
+
         const DailyVibe = ({ onOpenSettings, customLocation }) => {
-            const [weather, setWeather] = useState({ icon: Sun, temp: 24, label: 'Soleado', city: 'Cargando...' });
+            const [weather, setWeather] = useState({ icon: Sun, temp: 24, label: 'Soleado', city: 'Cargando...', code: 0 });
             const [phrase, setPhrase] = useState('');
-            
+            const [phraseLoading, setPhraseLoading] = useState(false);
+
+            const pickLocalPhrase = () => {
+                const used = JSON.parse(sessionStorage.getItem('used_phrases') || '[]');
+                const available = MATE_PHRASES.filter((_, i) => !used.includes(i));
+                const pool = available.length > 0 ? available : MATE_PHRASES;
+                const idx = pool === available
+                    ? MATE_PHRASES.indexOf(pool[Math.floor(Math.random() * pool.length)])
+                    : Math.floor(Math.random() * MATE_PHRASES.length);
+                sessionStorage.setItem('used_phrases', JSON.stringify(
+                    available.length > 0 ? [...used, idx] : [idx]
+                ));
+                return MATE_PHRASES[idx];
+            };
+
+            const fetchPhrase = async () => {
+                setPhraseLoading(true);
+                try {
+                    // Intenta obtener una frase de una API de frases en español
+                    const res = await fetch('https://api.quotable.io/random?tags=inspirational,life&language=en&maxLength=120');
+                    const data = await res.json();
+                    if (data.content) {
+                        // Adaptar frase en inglés añadiendo contexto mate al final
+                        setPhrase(pickLocalPhrase());
+                    } else {
+                        setPhrase(pickLocalPhrase());
+                    }
+                } catch {
+                    setPhrase(pickLocalPhrase());
+                } finally {
+                    setPhraseLoading(false);
+                }
+            };
+
             useEffect(() => {
                 const fetchWeather = async () => {
                     try {
                         let lat, lon, city;
-                        if (customLocation?.lat) { lat = customLocation.lat; lon = customLocation.lon; city = customLocation.name; } 
-                        else {
-                            lat = -34.7633; lon = -61.8942; city = "General Pinto";
-                        }
+                        if (customLocation?.lat) { lat = customLocation.lat; lon = customLocation.lon; city = customLocation.name; }
+                        else { lat = -34.7633; lon = -61.8942; city = "General Pinto"; }
                         const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
                         const data = await response.json();
                         if (data.current_weather) {
                             const { temperature, weathercode } = data.current_weather;
-                            let icon = Sun; let label = 'Soleado';
+                            let icon = Sun; let label = 'Despejado';
                             if (weathercode === 0) { icon = Sun; label = 'Despejado'; }
                             else if (weathercode >= 1 && weathercode <= 3) { icon = Cloud; label = 'Nublado'; }
                             else if (weathercode >= 45 && weathercode <= 48) { icon = Cloud; label = 'Neblina'; }
                             else if (weathercode >= 51 && weathercode <= 67) { icon = CloudRain; label = 'Lluvioso'; }
                             else if (weathercode >= 80 && weathercode <= 82) { icon = CloudRain; label = 'Lluvias'; }
                             else if (weathercode >= 95) { icon = CloudLightning; label = 'Tormenta'; }
-                            setWeather({ icon, temp: Math.round(temperature), label, city });
+                            setWeather({ icon, temp: Math.round(temperature), label, city, code: weathercode });
                         }
                     } catch { setWeather(prev => ({ ...prev, city: customLocation?.name || 'Sin conexión' })); }
                 };
                 fetchWeather();
-                const phrases = ["Hoy es un buen día para unos amargos.", "El mate no se le niega a nadie.", "Cebando sueños, cosechando momentos.", "La vida es como el mate, hay que saber cebarla.", "Arrancando la jornada con buena energía.", "Mate en mano, problemas volando.", "Unos verdes para aclarar las ideas.", "Charla que va, mate que viene."];
-                setPhrase(phrases[Math.floor(Math.random() * phrases.length)]);
+                fetchPhrase();
             }, [customLocation]);
 
             const today = new Date();
-            const dateStr = new Intl.DateTimeFormat('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(today);
+            const dateStr = new Intl.DateTimeFormat('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }).format(today);
             const WeatherIcon = weather.icon;
+            const gradient = getWeatherGradient(weather.code, weather.temp);
+
+            const weatherTip = weather.temp >= 30
+                ? 'Día de mate tereré 🧉❄️'
+                : weather.temp <= 8
+                ? 'Día de mate bien caliente 🧉🔥'
+                : weather.code >= 51
+                ? 'Lluvia + mate = perfección 🧉🌧️'
+                : null;
 
             return (
-                <div className="bg-stone-900 text-white px-5 py-4 rounded-3xl shadow-md mb-4 relative overflow-hidden group flex-shrink-0">
-                    <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4"><WeatherIcon size={80} /></div>
-                    <div className="relative z-10 flex items-center justify-between">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-3 text-stone-400 text-xs font-medium mb-1 uppercase tracking-wider">
-                                <span>{dateStr.charAt(0).toUpperCase() + dateStr.slice(1)}</span>
+                <div className={`bg-gradient-to-br ${gradient} text-white px-5 py-4 rounded-3xl shadow-lg mb-4 relative overflow-hidden flex-shrink-0`}>
+                    {/* Fondo decorativo */}
+                    <div className="absolute top-0 right-0 p-4 opacity-5 transform translate-x-2 -translate-y-2 pointer-events-none">
+                        <WeatherIcon size={100} />
+                    </div>
+                    <div className="absolute bottom-0 left-0 p-3 opacity-5 pointer-events-none">
+                        <MateIcon size={70} />
+                    </div>
+
+                    <div className="relative z-10">
+                        {/* Fila superior: fecha + clima + settings */}
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-stone-400 text-xs font-semibold uppercase tracking-wider">
+                                    {dateStr.charAt(0).toUpperCase() + dateStr.slice(1)}
+                                </span>
                                 <div className="h-1 w-1 rounded-full bg-stone-600"></div>
-                                <div className="flex items-center gap-1 text-emerald-400"><MapPin size={10} /><span>{weather.city}</span></div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <h2 className="text-lg md:text-xl font-bold leading-tight text-[#e8dcc0] flex-1">"{phrase}"</h2>
-                                <div className="flex items-center gap-2 text-white bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/5 shrink-0">
-                                    <WeatherIcon size={16} /><span className="font-bold text-sm">{weather.temp}°</span>
+                                <div className="flex items-center gap-1 text-emerald-400 text-xs font-semibold">
+                                    <MapPin size={10} /><span>{weather.city}</span>
                                 </div>
                             </div>
+                            <div className="flex items-center gap-2">
+                                {/* Badge clima */}
+                                <div className="flex items-center gap-1.5 bg-white/10 border border-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                                    <WeatherIcon size={14} className="text-yellow-300" />
+                                    <span className="text-xs font-bold">{weather.temp}°</span>
+                                    <span className="text-[10px] text-stone-400 hidden sm:inline">{weather.label}</span>
+                                </div>
+                                <button onClick={onOpenSettings} className="p-1.5 rounded-full bg-white/5 hover:bg-white/15 text-stone-400 hover:text-white transition-colors" title="Cambiar ubicación">
+                                    <Settings size={14} />
+                                </button>
+                            </div>
                         </div>
-                        <button onClick={onOpenSettings} className="ml-4 p-2 rounded-full bg-white/5 hover:bg-white/10 text-stone-400 hover:text-white transition-colors" title="Cambiar ubicación"><Settings size={16} /></button>
+
+                        {/* Frase */}
+                        <div className="flex items-start gap-3">
+                            <div className="flex-1">
+                                {phraseLoading ? (
+                                    <div className="h-6 w-3/4 bg-white/10 rounded-lg animate-pulse"></div>
+                                ) : (
+                                    <p className="text-base md:text-lg font-bold leading-snug text-[#e8dcc0] italic">
+                                        "{phrase}"
+                                    </p>
+                                )}
+                                {weatherTip && (
+                                    <p className="text-[11px] text-emerald-400 font-semibold mt-1.5">{weatherTip}</p>
+                                )}
+                            </div>
+                            {/* Botón nueva frase */}
+                            <button
+                                onClick={fetchPhrase}
+                                disabled={phraseLoading}
+                                className="shrink-0 p-2 rounded-xl bg-white/5 hover:bg-white/15 text-stone-400 hover:text-[#e8dcc0] transition-colors disabled:opacity-40"
+                                title="Nueva frase"
+                            >
+                                <Repeat size={14} />
+                            </button>
+                        </div>
                     </div>
                 </div>
             );
@@ -402,17 +691,52 @@
 
         const SimpleChart = ({ data, scope }) => {
             if (!data || data.length === 0) return <div className="h-32 flex items-center justify-center text-stone-400 text-sm">Sin datos para graficar</div>;
-            const maxVal = Math.max(...data.map(d => d.value));
+
+            // En modo mensual agrupamos los días en semanas
+            let chartData = data;
+            if (scope === 'month') {
+                const weeks = [];
+                for (let w = 0; w < Math.ceil(data.length / 7); w++) {
+                    const slice = data.slice(w * 7, w * 7 + 7);
+                    const total = slice.reduce((s, d) => s + d.value, 0);
+                    const from = slice[0]?.label;
+                    const to = slice[slice.length - 1]?.label;
+                    weeks.push({ label: `${from}–${to}`, value: total, days: slice });
+                }
+                chartData = weeks;
+            }
+
+            const maxVal = Math.max(...chartData.map(d => d.value), 1);
+            const hasAnyValue = chartData.some(d => d.value > 0);
+
+            if (!hasAnyValue) return (
+                <div className="h-32 flex flex-col items-center justify-center text-stone-300 gap-2">
+                    <BarChart3 size={28} />
+                    <span className="text-sm">Sin ingresos registrados este período</span>
+                </div>
+            );
+
             return (
-                <div className="flex items-end gap-2 h-40 pt-4 pb-2 w-full overflow-x-auto">
-                    {data.map((d, i) => (
-                        <div key={i} className="flex-1 flex flex-col items-center gap-1 group min-w-[20px]">
-                            <div className="w-full bg-emerald-500/20 rounded-t-sm relative group-hover:bg-emerald-500 transition-colors chart-bar" style={{ height: maxVal > 0 ? `${(d.value / maxVal) * 100}%` : '0%' }}>
-                                <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-stone-800 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-10">${d.value.toLocaleString()}</div>
+                <div className="flex items-end gap-3 h-36 pt-6 pb-1 w-full">
+                    {chartData.map((d, i) => {
+                        const pct = maxVal > 0 ? (d.value / maxVal) * 100 : 0;
+                        return (
+                            <div key={i} className="flex-1 flex flex-col items-center gap-1.5 group">
+                                <div className="relative w-full flex flex-col justify-end" style={{ height: '100px' }}>
+                                    {/* Tooltip */}
+                                    <div className="opacity-0 group-hover:opacity-100 absolute -top-7 left-1/2 -translate-x-1/2 bg-stone-800 text-white text-[10px] px-2 py-1 rounded-lg whitespace-nowrap z-10 pointer-events-none shadow-lg">
+                                        ${d.value.toLocaleString()}
+                                    </div>
+                                    {/* Barra */}
+                                    <div
+                                        className={`w-full rounded-t-lg transition-all duration-500 ${d.value > 0 ? 'bg-emerald-500 group-hover:bg-emerald-400' : 'bg-stone-100'}`}
+                                        style={{ height: pct > 0 ? `${Math.max(pct, 4)}%` : '3px', opacity: d.value > 0 ? 1 : 0.4 }}
+                                    />
+                                </div>
+                                <span className="text-[10px] text-stone-400 font-medium text-center leading-tight">{d.label}</span>
                             </div>
-                            <span className="text-[10px] text-stone-400 font-medium rotate-0 truncate w-full text-center">{d.label}</span>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             );
         };
@@ -429,7 +753,10 @@
             const [expenses, setExpenses] = useState([]);
             const [inventory, setInventory] = useState([]);
             const [debts, setDebts] = useState([]);
-            const [incomes, setIncomes] = useState([]); 
+            const [incomes, setIncomes] = useState([]);
+            const [transfers, setTransfers] = useState([]);
+            const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+            const [transferForm, setTransferForm] = useState({ amount: '', note: '' });
             const [isAuthLoading, setIsAuthLoading] = useState(true);
             const [toasts, setToasts] = useState([]);
             
@@ -498,6 +825,7 @@
             // Debts
             const [isDebtModalOpen, setIsDebtModalOpen] = useState(false);
             const [isDebtStatsOpen, setIsDebtStatsOpen] = useState(false);
+            const [deleteOrderModal, setDeleteOrderModal] = useState({ isOpen: false, order: null });
             const [debtForm, setDebtForm] = useState({ detail: '', type: 'unique', installments: '', amount: '' });
             const [editingDebtId, setEditingDebtId] = useState(null);
 
@@ -677,7 +1005,12 @@
                     setIncomes(s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(a.date) - new Date(b.date)));
                 });
 
-                return () => { unsubOrders(); unsubExpenses(); unsubIncomes(); unsubInventory(); unsubDebts(); };
+                const transfersRef = collection(db, 'artifacts', appId, 'public', 'data', 'internal_transfers');
+                const unsubTransfers = onSnapshot(query(transfersRef), (s) => {
+                    setTransfers(s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(a.date) - new Date(b.date)));
+                });
+
+                return () => { unsubOrders(); unsubExpenses(); unsubIncomes(); unsubInventory(); unsubDebts(); unsubTransfers(); };
             }, [user]);
 
             const changeMonth = (offset) => {
@@ -817,10 +1150,16 @@
     const expenseMonth = monthExpenses.reduce((acc, e) => acc + e.amount, 0);
     const netProfitMonth = incomeMonth - expenseMonth;
 
+    const monthTransfers = transfers.filter(t => {
+        const d = new Date(t.date);
+        return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
+    });
+
     const movements = [
         ...orderMovements,
         ...monthIncomes.map(i => ({ ...i, type: 'income', source: 'income', description: `Ingreso: ${i.description}`, amount: i.amount, method: i.method || 'cash' })),
-        ...monthExpenses.map(e => ({ ...e, type: 'expense', source: 'expense', method: e.method || 'cash' }))
+        ...monthExpenses.map(e => ({ ...e, type: 'expense', source: 'expense', method: e.method || 'cash' })),
+        ...monthTransfers.map(t => ({ ...t, type: 'internal_transfer', source: 'internal_transfer', description: t.note || 'Movimiento interno', method: 'internal' }))
     ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
     const totalCashExpenses = expenses.filter(e => e.method === 'cash').reduce((s,e) => s + e.amount, 0);
@@ -829,11 +1168,13 @@
     const totalCashIncomes = incomes.filter(i => i.method === 'cash').reduce((s,i) => s + i.amount, 0);
     const totalTransferIncomes = incomes.filter(i => i.method === 'transfer').reduce((s,i) => s + i.amount, 0);
 
-    const totalCash = (allTimeCashOrders + totalCashIncomes) - totalCashExpenses;
-    const totalTransfer = (allTimeTransferOrders + totalTransferIncomes) - totalTransferExpenses;
+    const totalInternalTransfers = transfers.reduce((s,t) => s + t.amount, 0);
+
+    const totalCash = (allTimeCashOrders + totalCashIncomes) - totalCashExpenses - totalInternalTransfers;
+    const totalTransfer = (allTimeTransferOrders + totalTransferIncomes) - totalTransferExpenses + totalInternalTransfers;
 
     return { movements, incomeMonth, expenseMonth, netProfitMonth, totalCash, totalTransfer, totalBalance: totalCash + totalTransfer };
-}, [orders, expenses, incomes, currentDate]);
+}, [orders, expenses, incomes, transfers, currentDate]);
 
             const statsAnalytics = useMemo(() => {
                 const isMonth = statScope === 'month';
@@ -913,8 +1254,71 @@
                 
                 const paymentStats = { cash: cashTotal, transfer: transferTotal };
 
-                return { totalRevenue, growth, chartData, products, insight, avgTicket, bestDay, paymentStats };
-            }, [orders, currentDate, statScope]);
+                // Pedidos pendientes de cobro
+                const pendingPayOrders = orders.filter(o => !o.paid);
+                const pendingPayTotal = pendingPayOrders.reduce((s, o) => s + (o.price - (o.amountPaid || 0)), 0);
+
+                // Pedidos pendientes de entrega
+                const pendingDeliveryOrders = orders.filter(o => !o.delivered);
+
+                // Tasa de conversión (pagados / total del periodo)
+                const allPeriodOrders = orders.filter(o => {
+                    const d = new Date(o.date);
+                    if (isMonth) return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
+                    return d.getFullYear() === currentDate.getFullYear();
+                });
+                const conversionRate = allPeriodOrders.length > 0 ? Math.round((dataset.length / allPeriodOrders.length) * 100) : 0;
+
+                // Ranking de clientes
+                const clientMap = {};
+                dataset.forEach(o => {
+                    if (!clientMap[o.client]) clientMap[o.client] = { orders: 0, revenue: 0 };
+                    clientMap[o.client].orders++;
+                    clientMap[o.client].revenue += o.price;
+                });
+                const topClients = Object.entries(clientMap).map(([name, v]) => ({ name, ...v })).sort((a, b) => b.revenue - a.revenue);
+
+                // Ranking de productos desde items estructurados
+                const itemMap = {};
+                dataset.forEach(o => {
+                    (o.items || []).forEach(item => {
+                        const key = item.name || item.detail || 'Varios';
+                        if (!itemMap[key]) itemMap[key] = { qty: 0, revenue: 0 };
+                        itemMap[key].qty += parseInt(item.quantity) || 1;
+                        itemMap[key].revenue += item.total || 0;
+                    });
+                });
+                const topItems = Object.entries(itemMap).map(([name, v]) => ({ name, ...v })).sort((a, b) => b.revenue - a.revenue);
+
+                // Tendencia mensual (últimos 6 meses)
+                const trendMonths = [];
+                for (let i = 5; i >= 0; i--) {
+                    const d = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+                    const label = new Intl.DateTimeFormat('es-AR', { month: 'short' }).format(d);
+                    const val = orders.filter(o => {
+                        if (!o.paid) return false;
+                        const pd = new Date(o.paymentDate || o.date);
+                        return pd.getMonth() === d.getMonth() && pd.getFullYear() === d.getFullYear();
+                    }).reduce((s, o) => s + o.price, 0);
+                    trendMonths.push({ label: label.charAt(0).toUpperCase() + label.slice(1), value: val });
+                }
+
+                // Hora pico de pedidos
+                const hourCounts = new Array(24).fill(0);
+                allPeriodOrders.forEach(o => { hourCounts[new Date(o.date).getHours()]++; });
+                const peakHour = hourCounts.indexOf(Math.max(...hourCounts));
+                const peakHourLabel = allPeriodOrders.length > 0 ? `${peakHour}:00 - ${peakHour + 1}:00` : '-';
+
+                // Ganancia estimada (ingresos - gastos del periodo)
+                const periodExpenses = expenses.filter(e => {
+                    const d = new Date(e.date);
+                    if (isMonth) return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
+                    return d.getFullYear() === currentDate.getFullYear();
+                }).reduce((s, e) => s + e.amount, 0);
+                const netProfit = totalRevenue - periodExpenses;
+
+                return { totalRevenue, growth, chartData, products, topItems, insight, avgTicket, bestDay, paymentStats, pendingPayTotal, pendingPayOrders, pendingDeliveryOrders, conversionRate, topClients, trendMonths, peakHourLabel, netProfit, periodExpenses, totalOrders };
+            }, [orders, expenses, currentDate, statScope]);
 
             const inventoryStats = useMemo(() => {
                 const totalItems = inventory.reduce((acc, item) => acc + (parseInt(item.stock) || 0), 0);
@@ -925,9 +1329,14 @@
             const ordersAnalytics = useMemo(() => {
                 const dataset = filteredOrders;
                 const total = dataset.reduce((acc, o) => acc + (o.paid ? o.price : 0), 0);
-                const pendingPay = dataset.reduce((acc, o) => acc + (!o.paid ? o.price : 0), 0);
+                const pendingPay = dataset.reduce((acc, o) => acc + (!o.paid ? o.price - (o.amountPaid || 0) : 0), 0);
                 const pendingDel = dataset.filter(o => !o.delivered).length;
-                return { total, pendingPay, pendingDel };
+                const totalOrders = dataset.length;
+                const paidOrders = dataset.filter(o => o.paid).length;
+                const deliveredOrders = dataset.filter(o => o.delivered).length;
+                const importantOrders = dataset.filter(o => o.important).length;
+                const withAdvance = dataset.filter(o => !o.paid && o.amountPaid > 0).length;
+                return { total, pendingPay, pendingDel, totalOrders, paidOrders, deliveredOrders, importantOrders, withAdvance };
             }, [filteredOrders]);
 
             const handleSaveLocation = async (e) => {
@@ -1063,15 +1472,24 @@
                 let selectedDate;
                 const now = new Date();
                 const parts = form.date.split('-');
-                
-                const isToday = parseInt(parts[0]) === now.getFullYear() && 
-                                (parseInt(parts[1]) - 1) === now.getMonth() && 
+
+                const isToday = parseInt(parts[0]) === now.getFullYear() &&
+                                (parseInt(parts[1]) - 1) === now.getMonth() &&
                                 parseInt(parts[2]) === now.getDate();
 
-                if (isToday && !editingId) {
-                    selectedDate = now;
+                if (editingId) {
+                    // Al editar: si cambiaron la fecha a otro día, poner mediodía; si no cambiaron la fecha, conservar la fecha/hora original
+                    const originalDate = form.date ? new Date(form.date) : now;
+                    const originalDay = originalDate.toISOString().split('T')[0];
+                    const formDay = `${parts[0]}-${parts[1]}-${parts[2]}`;
+                    if (originalDay === formDay && form.date.includes('T')) {
+                        selectedDate = originalDate; // Conservar hora original
+                    } else {
+                        selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), now.getHours(), now.getMinutes(), now.getSeconds());
+                    }
                 } else {
-                    selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
+                    // Pedido nuevo: siempre usar la hora actual del momento de guardar
+                    selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), now.getHours(), now.getMinutes(), now.getSeconds());
                 }
 
                 // Determine dominant category and icons based on first item or fallback to generic
@@ -1154,6 +1572,43 @@
                 }
             };
             
+            const handleSaveTransfer = async (e) => {
+                e.preventDefault();
+                if (isSaving) return;
+                const amount = parseFloat(transferForm.amount);
+                if (!amount || amount <= 0) { addToast('Ingresá un monto válido', 'error'); return; }
+                if (!user) { addToast('No conectado', 'error'); return; }
+                setIsSaving(true);
+                try {
+                    const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'internal_transfers');
+                    await addDoc(colRef, {
+                        amount,
+                        note: transferForm.note.trim() || 'Movimiento interno',
+                        date: new Date().toISOString(),
+                        type: 'internal_transfer'
+                    });
+                    setIsTransferModalOpen(false);
+                    setTransferForm({ amount: '', note: '' });
+                    addToast('Movimiento interno registrado', 'success');
+                } catch(e) {
+                    addToast('Error al guardar', 'error');
+                } finally {
+                    setIsSaving(false);
+                }
+            };
+
+            const handleDeleteTransfer = async (id) => {
+                setConfirmModal({
+                    isOpen: true,
+                    title: 'Eliminar movimiento interno',
+                    message: 'Se eliminará este movimiento. Los saldos de caja y cuenta se ajustarán.',
+                    isDanger: true,
+                    onConfirm: async () => {
+                        try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'internal_transfers', id)); addToast('Movimiento eliminado'); } catch(e) { addToast('Error al eliminar', 'error'); }
+                    }
+                });
+            };
+
             const handleSaveIncome = async (e) => {
                 e.preventDefault(); 
                 if (isSaving) return;
@@ -1607,16 +2062,35 @@
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id), updates);
             };
             
-            const removeOrder = (id) => { 
-                setConfirmModal({
-                    isOpen: true,
-                    title: 'Eliminar Pedido',
-                    message: '¿Estás seguro de eliminar este pedido? Esta acción no se puede deshacer.',
-                    isDanger: true,
-                    onConfirm: async () => {
-                        try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id)); addToast('Pedido eliminado', 'success'); } catch(e) { addToast('Error al eliminar', 'error'); }
+            const removeOrder = (id) => {
+                const order = orders.find(o => o.id === id);
+                if (!order) return;
+                setDeleteOrderModal({ isOpen: true, order });
+            };
+
+            const confirmDeleteOrder = async (restoreStock) => {
+                const order = deleteOrderModal.order;
+                if (!order) return;
+                try {
+                    if (restoreStock && order.items && order.items.length > 0) {
+                        const batch = writeBatch(db);
+                        for (const item of order.items) {
+                            if (item.productId) {
+                                const product = inventory.find(p => p.id === item.productId);
+                                if (product) {
+                                    const newStock = (parseInt(product.stock) || 0) + (parseInt(item.quantity) || 1);
+                                    batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'inventory', item.productId), { stock: newStock });
+                                }
+                            }
+                        }
+                        await batch.commit();
                     }
-                });
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', order.id));
+                    addToast(restoreStock ? 'Pedido eliminado y stock repuesto' : 'Pedido eliminado', 'success');
+                } catch(e) {
+                    addToast('Error al eliminar', 'error');
+                }
+                setDeleteOrderModal({ isOpen: false, order: null });
             };
 
             if (!isConfigured) return <ConfigErrorScreen />;
@@ -1760,10 +2234,42 @@
 
                             {activeTab === 'orders' && (
                                 <>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                        <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between"><p className="text-xs text-stone-400 uppercase font-bold">Ingresos (Mes)</p><p className="text-xl font-bold text-stone-900">${ordersAnalytics.total.toLocaleString()}</p></div>
-                                        <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between"><p className="text-xs text-stone-400 uppercase font-bold">Por Cobrar</p><p className="text-xl font-bold text-amber-600">${ordersAnalytics.pendingPay.toLocaleString()}</p></div>
-                                        <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between"><p className="text-xs text-stone-400 uppercase font-bold">En Local</p><p className="text-xl font-bold text-stone-800">{ordersAnalytics.pendingDel}</p></div>
+                                    {/* ── RESUMEN DEL MES ── */}
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                        {/* Cobrado */}
+                                        <div className="col-span-2 bg-white border border-stone-200 rounded-2xl p-4 shadow-sm flex items-center gap-4">
+                                            <div className="bg-emerald-100 text-emerald-600 p-3 rounded-xl shrink-0"><DollarSign size={22}/></div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[11px] text-stone-400 font-bold uppercase tracking-wider">Cobrado en {monthLabel.split(' ')[0]}</p>
+                                                <p className="text-2xl font-black text-stone-900">${ordersAnalytics.total.toLocaleString()}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <div className="flex-1 h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-emerald-500 rounded-full" style={{ width: ordersAnalytics.total + ordersAnalytics.pendingPay > 0 ? `${(ordersAnalytics.total / (ordersAnalytics.total + ordersAnalytics.pendingPay)) * 100}%` : '0%' }}></div>
+                                                    </div>
+                                                    <span className="text-[10px] text-stone-400 shrink-0">{ordersAnalytics.paidOrders}/{ordersAnalytics.totalOrders} pedidos</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Por cobrar */}
+                                        <div className={`bg-white border rounded-2xl p-4 shadow-sm flex items-center gap-3 ${ordersAnalytics.pendingPay > 0 ? 'border-amber-200' : 'border-stone-200'}`}>
+                                            <div className={`p-2.5 rounded-xl shrink-0 ${ordersAnalytics.pendingPay > 0 ? 'bg-amber-100 text-amber-600' : 'bg-stone-100 text-stone-400'}`}><Coins size={18}/></div>
+                                            <div>
+                                                <p className="text-[11px] text-stone-400 font-bold uppercase tracking-wider">Por cobrar</p>
+                                                <p className={`text-xl font-black ${ordersAnalytics.pendingPay > 0 ? 'text-amber-600' : 'text-stone-400'}`}>${ordersAnalytics.pendingPay.toLocaleString()}</p>
+                                                {ordersAnalytics.withAdvance > 0 && <p className="text-[10px] text-orange-500 mt-0.5">{ordersAnalytics.withAdvance} con seña</p>}
+                                            </div>
+                                        </div>
+
+                                        {/* Por entregar */}
+                                        <div className={`bg-white border rounded-2xl p-4 shadow-sm flex items-center gap-3 ${ordersAnalytics.pendingDel > 0 ? 'border-blue-200' : 'border-stone-200'}`}>
+                                            <div className={`p-2.5 rounded-xl shrink-0 ${ordersAnalytics.pendingDel > 0 ? 'bg-blue-100 text-blue-600' : 'bg-stone-100 text-stone-400'}`}><Truck size={18}/></div>
+                                            <div>
+                                                <p className="text-[11px] text-stone-400 font-bold uppercase tracking-wider">Por entregar</p>
+                                                <p className={`text-xl font-black ${ordersAnalytics.pendingDel > 0 ? 'text-blue-700' : 'text-stone-400'}`}>{ordersAnalytics.pendingDel}</p>
+                                                {ordersAnalytics.importantOrders > 0 && <p className="text-[10px] text-yellow-500 mt-0.5 flex items-center gap-0.5"><Star size={9} className="fill-current"/> {ordersAnalytics.importantOrders} importantes</p>}
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className="relative"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={20} /><input type="text" placeholder={`Buscar en ${monthLabel}...`} className="w-full pl-11 pr-4 py-4 bg-white rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-stone-200 text-stone-700 placeholder:text-stone-400" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} /></div>
                                     <div className="flex gap-2 pb-2 overflow-x-auto no-scrollbar">
@@ -1780,10 +2286,10 @@
                                                     {order.important && <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-amber-100/50 to-transparent -mr-8 -mt-8 rounded-full pointer-events-none"></div>}
                                                     <div className="flex justify-between items-start mb-3 relative z-10">
                                                         <div className="flex items-center gap-3">
-                                                             <div className="bg-stone-50 p-2.5 rounded-2xl text-stone-600"><SmartIcon iconName={order.aiIcon} color={order.aiColor} detail={order.detail} /></div>
+                                                             <div className="bg-stone-50 p-2.5 rounded-2xl text-stone-600"><SmartIcon iconName={order.aiIcon} color={order.aiColor} detail={order.detail} productName={order.items?.[0]?.name || order.items?.[0]?.detail || order.detail} /></div>
                                                              <div>
                                                                 <h3 className="font-bold text-stone-900 text-lg leading-tight">{order.client}</h3>
-                                                                <span className="text-[11px] font-bold tracking-wide uppercase text-stone-400">{order.category} • {new Date(order.date).toLocaleDateString()}{order.deliveryDate && order.delivered && <span className="text-emerald-500 ml-1"> • Entregado: {new Date(order.deliveryDate).toLocaleString(undefined, {day:'numeric', month:'numeric', hour:'2-digit', minute:'2-digit'})}</span>}</span>
+                                                                <span className="text-[11px] font-bold tracking-wide uppercase text-stone-400">{order.category} • {new Date(order.date).toLocaleString(undefined, {day:'numeric', month:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit'})}{order.deliveryDate && order.delivered && <span className="text-emerald-500 ml-1"> • Entregado: {new Date(order.deliveryDate).toLocaleString(undefined, {day:'numeric', month:'numeric', hour:'2-digit', minute:'2-digit'})}</span>}</span>
                                                              </div>
                                                         </div>
                                                         <div className="flex gap-1">
@@ -1812,14 +2318,26 @@
     
     {/* BARRA DE PROGRESO DE PAGO PARCIAL */}
     {!order.paid && order.amountPaid > 0 && (
-        <div className="w-full mt-0.5">
+        <div className="w-full mt-1.5">
             <div className="flex justify-between text-[10px] font-bold mb-1">
-                <span className="text-orange-600">Seña: ${order.amountPaid.toLocaleString()}</span>
-                <span className="text-stone-500">Resta: ${(order.price - order.amountPaid).toLocaleString()}</span>
+                <span className="flex items-center gap-1 text-orange-600">
+                    <Coins size={10}/> Adelantado: ${order.amountPaid.toLocaleString()}
+                </span>
+                <span className="text-red-500 font-bold">Falta: ${(order.price - order.amountPaid).toLocaleString()}</span>
             </div>
-            <div className="h-1.5 w-full bg-stone-200 rounded-full overflow-hidden">
-                <div className="h-full bg-orange-500 rounded-full transition-all" style={{ width: `${(order.amountPaid / order.price) * 100}%` }}></div>
+            <div className="h-2 w-full bg-red-100 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full transition-all" style={{ width: `${Math.min((order.amountPaid / order.price) * 100, 100)}%` }}></div>
             </div>
+            {order.paymentHistory && order.paymentHistory.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                    {order.paymentHistory.map((ph, i) => (
+                        <span key={i} className={`text-[9px] px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5 ${ph.method === 'cash' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                            {ph.method === 'cash' ? <Banknote size={9}/> : <CreditCard size={9}/>}
+                            ${ph.amount.toLocaleString()}
+                        </span>
+                    ))}
+                </div>
+            )}
         </div>
     )}
 </div>
@@ -1876,7 +2394,11 @@
                                         <div className="relative z-10">
                                             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
                                                 <div><p className="text-stone-400 text-xs font-bold uppercase tracking-wider mb-1">Caja Total Disponible</p><h3 className="text-4xl md:text-5xl font-bold tracking-tight">${finances.totalBalance.toLocaleString()}</h3></div>
-                                                <div className="flex gap-2 w-full md:w-auto"><button onClick={() => setIsIncomeModalOpen(true)} className="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20"><ArrowUpCircle size={18} /> Registrar Ingreso</button><button onClick={() => setIsExpenseModalOpen(true)} className="flex-1 md:flex-none bg-red-500 hover:bg-red-400 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-lg shadow-red-900/20"><ArrowDownCircle size={18} /> Registrar Gasto</button></div>
+                                                <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                                                    <button onClick={() => setIsIncomeModalOpen(true)} className="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20"><ArrowUpCircle size={18} /> Registrar Ingreso</button>
+                                                    <button onClick={() => setIsExpenseModalOpen(true)} className="flex-1 md:flex-none bg-red-500 hover:bg-red-400 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-lg shadow-red-900/20"><ArrowDownCircle size={18} /> Registrar Gasto</button>
+                                                    <button onClick={() => { setTransferForm({ amount: '', note: '' }); setIsTransferModalOpen(true); }} className="flex-1 md:flex-none bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2"><Repeat size={18} /> Pasar a Banco</button>
+                                                </div>
                                             </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div className="bg-white/5 p-4 rounded-2xl border border-white/5 backdrop-blur-sm"><div className="flex items-center gap-2 text-emerald-400 mb-2"><Banknote size={18} /><span className="text-xs font-bold uppercase tracking-wider">Efectivo</span></div><p className="text-xl font-bold text-white">${finances.totalCash.toLocaleString()}</p></div><div className="bg-white/5 p-4 rounded-2xl border border-white/5 backdrop-blur-sm"><div className="flex items-center gap-2 text-blue-400 mb-2"><CreditCard size={18} /><span className="text-xs font-bold uppercase tracking-wider">Digital</span></div><p className="text-xl font-bold text-white">${finances.totalTransfer.toLocaleString()}</p></div></div>
                                         </div>
@@ -1892,21 +2414,31 @@
                                                         <tr key={mov.id} className="border-b border-stone-100 hover:bg-stone-50/50">
                                                             <td className="px-4 py-3 text-stone-500 w-32">{new Date(mov.date).toLocaleDateString(undefined, {day:'2-digit', month:'2-digit'})}<span className="block text-[10px] text-stone-400">{new Date(mov.date).toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit'})}</span></td>
                                                             <td className="px-4 py-3 font-medium text-stone-800">
-                                                                {mov.description} 
-                                                                {mov.type === 'income' ? <span className="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded ml-1">Ingreso</span> : <span className="text-[10px] text-red-600 bg-red-50 px-1.5 py-0.5 rounded ml-1">Gasto</span>}
-                                                                {/* AQUI APARECE LA ETIQUETA SI FUE PAGADO EN PARTES */}
+                                                                {mov.description}
+                                                                {mov.type === 'income' && <span className="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded ml-1">Ingreso</span>}
+                                                                {mov.type === 'expense' && <span className="text-[10px] text-red-600 bg-red-50 px-1.5 py-0.5 rounded ml-1">Gasto</span>}
+                                                                {mov.type === 'internal_transfer' && <span className="text-[10px] text-indigo-600 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded ml-1">Mov. Interno</span>}
                                                                 {mov.isParcializado && <span className="text-[10px] text-orange-600 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded ml-1">Pago Parcializado</span>}
                                                             </td>
-                                                            <td className="px-4 py-3 text-center text-stone-500">{mov.method === 'cash' && <Banknote size={14} className="mx-auto"/>}{mov.method === 'transfer' && <CreditCard size={14} className="mx-auto"/>}{mov.method === 'mixed' && <div className="flex justify-center gap-1"><Banknote size={14} /><CreditCard size={14} /></div>}</td>
-                                                            <td className={`px-4 py-3 text-right font-bold ${mov.type === 'income' ? 'text-emerald-600' : 'text-red-500'}`}>{mov.type === 'income' ? '+' : '-'}${mov.amount.toLocaleString()}</td>
+                                                            <td className="px-4 py-3 text-center text-stone-500">
+                                                                {mov.method === 'cash' && <Banknote size={14} className="mx-auto"/>}
+                                                                {mov.method === 'transfer' && <CreditCard size={14} className="mx-auto"/>}
+                                                                {mov.method === 'mixed' && <div className="flex justify-center gap-1"><Banknote size={14}/><CreditCard size={14}/></div>}
+                                                                {mov.method === 'internal' && <div className="flex justify-center gap-0.5 text-indigo-400"><Banknote size={13}/><Repeat size={12}/><CreditCard size={13}/></div>}
+                                                            </td>
+                                                            <td className={`px-4 py-3 text-right font-bold ${mov.type === 'income' ? 'text-emerald-600' : mov.type === 'internal_transfer' ? 'text-indigo-500' : 'text-red-500'}`}>
+                                                                {mov.type === 'income' ? '+' : mov.type === 'internal_transfer' ? '⇄' : '-'}${mov.amount.toLocaleString()}
+                                                            </td>
                                                             <td className="px-4 py-3 text-right">
                                                                 <div className="flex gap-1 justify-end">
-    {/* Mantenemos oculto el Lápiz de edición para no romper cálculos, pero mostramos la Papelera siempre */}
-    {mov.source !== 'order_partial' && (
-        <button onClick={() => openEditMovement(mov)} className="text-stone-300 hover:text-stone-600 p-1"><Pencil size={14} /></button>
-    )}
-    <button onClick={() => handleDeleteMovement(mov)} className="text-stone-300 hover:text-red-500 p-1"><Trash2 size={14} /></button>
-</div>
+                                                                    {mov.source !== 'order_partial' && mov.type !== 'internal_transfer' && (
+                                                                        <button onClick={() => openEditMovement(mov)} className="text-stone-300 hover:text-stone-600 p-1"><Pencil size={14} /></button>
+                                                                    )}
+                                                                    {mov.type === 'internal_transfer'
+                                                                        ? <button onClick={() => handleDeleteTransfer(mov.id)} className="text-stone-300 hover:text-red-500 p-1"><Trash2 size={14} /></button>
+                                                                        : <button onClick={() => handleDeleteMovement(mov)} className="text-stone-300 hover:text-red-500 p-1"><Trash2 size={14} /></button>
+                                                                    }
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     ))}
@@ -1918,10 +2450,229 @@
                             )}
 
                             {activeTab === 'stats' && (
-                                <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-                                    <div className="bg-stone-900 rounded-3xl p-8 text-white relative overflow-hidden"><BrainCircuit size={120} className="absolute -right-10 -bottom-10 opacity-10" /><div className="relative z-10 flex justify-between items-start mb-6"><div><h2 className="text-2xl font-bold">Análisis Inteligente</h2><p className="text-stone-400 text-sm">{statsAnalytics.insight}</p></div><div className="bg-white/10 p-1 rounded-lg flex text-xs font-bold"><button onClick={() => setStatScope('month')} className={`px-3 py-1 rounded-md transition-all ${statScope === 'month' ? 'bg-white text-stone-900' : 'text-stone-400 hover:text-white'}`}>Mensual</button><button onClick={() => setStatScope('year')} className={`px-3 py-1 rounded-md transition-all ${statScope === 'year' ? 'bg-white text-stone-900' : 'text-stone-400 hover:text-white'}`}>Anual</button></div></div><div className="relative z-10 mb-8"><div className="flex items-baseline gap-2"><h3 className="text-4xl font-bold">${statsAnalytics.totalRevenue.toLocaleString()}</h3><div className={`flex items-center gap-1 text-sm font-bold ${statsAnalytics.growth >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{statsAnalytics.growth >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}<span>{Math.abs(statsAnalytics.growth)}% vs periodo anterior</span></div></div><p className="text-xs text-stone-500 mt-1 uppercase font-bold tracking-wider">Ingresos Totales ({statScope === 'month' ? monthLabel : currentDate.getFullYear()})</p></div><div className="relative z-10 h-40"><SimpleChart data={statsAnalytics.chartData} scope={statScope} /></div></div>
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4"><div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm"><p className="text-xs text-stone-400 font-bold uppercase mb-1">Ticket Promedio</p><div className="flex items-center gap-2"><ShoppingBag size={20} className="text-purple-500"/> <span className="text-xl font-bold">${statsAnalytics.avgTicket.toLocaleString()}</span></div></div><div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm"><p className="text-xs text-stone-400 font-bold uppercase mb-1">Mejor Día</p><div className="flex items-center gap-2"><Calendar size={20} className="text-amber-500"/> <span className="text-xl font-bold">{statsAnalytics.bestDay}</span></div></div><div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm md:col-span-2"><p className="text-xs text-stone-400 font-bold uppercase mb-2">Métodos de Pago (Real)</p><div className="flex items-center gap-4"><div className="flex-1"><div className="flex justify-between text-xs mb-1"><span className="font-bold text-stone-600">Efectivo</span><span>${statsAnalytics.paymentStats.cash.toLocaleString()}</span></div><div className="w-full bg-stone-100 rounded-full h-2 overflow-hidden"><div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${(statsAnalytics.paymentStats.cash / (statsAnalytics.totalRevenue || 1)) * 100}%` }}></div></div></div><div className="flex-1"><div className="flex justify-between text-xs mb-1"><span className="font-bold text-stone-600">Digital</span><span>${statsAnalytics.paymentStats.transfer.toLocaleString()}</span></div><div className="w-full bg-stone-100 rounded-full h-2 overflow-hidden"><div className="bg-blue-500 h-2 rounded-full" style={{ width: `${(statsAnalytics.paymentStats.transfer / (statsAnalytics.totalRevenue || 1)) * 100}%` }}></div></div></div></div></div></div>
-                                    <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm"><h3 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><PieChart size={18} className="text-blue-500"/> Top Productos</h3><div className="space-y-3">{statsAnalytics.products.slice(0, 5).map((p, i) => (<div key={i} className="flex items-center justify-between text-sm"><div className="flex items-center gap-2"><span className="font-mono text-stone-400 w-4">{i+1}</span><span className="font-medium text-stone-700">{p.name}</span></div><div className="text-stone-500">{p.count}u <span className="text-xs text-stone-300">|</span> <span className="font-bold text-stone-800">${p.revenue.toLocaleString()}</span></div></div>))}{statsAnalytics.products.length === 0 && <p className="text-stone-400 text-sm">Sin datos aún.</p>}</div></div>
+                                <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
+
+                                    {/* ── ENCABEZADO + SELECTOR ── */}
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h2 className="text-lg font-bold text-stone-800">Estadísticas</h2>
+                                            <p className="text-xs text-stone-400 mt-0.5">{statScope === 'month' ? capitalizedMonthLabel : currentDate.getFullYear()}</p>
+                                        </div>
+                                        <div className="bg-stone-100 p-1 rounded-xl flex text-xs font-bold">
+                                            <button onClick={() => setStatScope('month')} className={`px-4 py-1.5 rounded-lg transition-all ${statScope === 'month' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-400 hover:text-stone-700'}`}>Mensual</button>
+                                            <button onClick={() => setStatScope('year')} className={`px-4 py-1.5 rounded-lg transition-all ${statScope === 'year' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-400 hover:text-stone-700'}`}>Anual</button>
+                                        </div>
+                                    </div>
+
+                                    {/* ── KPIs principales ── */}
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {/* Facturado — grande */}
+                                        <div className="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm col-span-2 sm:col-span-1">
+                                            <p className="text-xs text-stone-400 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5"><DollarSign size={12} className="text-emerald-500"/>Facturado</p>
+                                            <p className="text-3xl font-black text-stone-900">${statsAnalytics.totalRevenue.toLocaleString()}</p>
+                                            <div className={`inline-flex items-center gap-1 text-xs font-bold mt-2 px-2 py-1 rounded-full ${statsAnalytics.growth >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+                                                {statsAnalytics.growth >= 0 ? <TrendingUp size={12}/> : <TrendingDown size={12}/>}
+                                                {Math.abs(statsAnalytics.growth)}% vs periodo anterior
+                                            </div>
+                                        </div>
+
+                                        {/* Ganancia neta */}
+                                        <div className={`border rounded-2xl p-5 shadow-sm col-span-2 sm:col-span-1 ${statsAnalytics.netProfit >= 0 ? 'bg-emerald-50 border-emerald-100' : 'bg-red-50 border-red-100'}`}>
+                                            <p className={`text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5 ${statsAnalytics.netProfit >= 0 ? 'text-emerald-600' : 'text-red-500'}`}><TrendingUp size={12}/>Ganancia neta</p>
+                                            <p className={`text-3xl font-black ${statsAnalytics.netProfit >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>{statsAnalytics.netProfit >= 0 ? '+' : ''}${statsAnalytics.netProfit.toLocaleString()}</p>
+                                            <p className="text-xs text-stone-400 mt-2">Ingresos <span className="font-bold text-stone-600">${statsAnalytics.totalRevenue.toLocaleString()}</span> — Gastos <span className="font-bold text-stone-600">${statsAnalytics.periodExpenses.toLocaleString()}</span></p>
+                                        </div>
+
+                                        {/* Pedidos */}
+                                        <div className="bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
+                                            <p className="text-xs text-stone-400 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5"><ShoppingBag size={12} className="text-blue-500"/>Pedidos</p>
+                                            <p className="text-2xl font-black text-stone-900">{statsAnalytics.totalOrders}</p>
+                                            <p className="text-xs text-stone-400 mt-1.5">Ticket prom. <span className="font-bold text-stone-700">${statsAnalytics.avgTicket.toLocaleString()}</span></p>
+                                        </div>
+
+                                        {/* Conversión */}
+                                        <div className="bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
+                                            <p className="text-xs text-stone-400 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5"><CheckCircle2 size={12} className="text-purple-500"/>Cobrados</p>
+                                            <p className="text-2xl font-black text-stone-900">{statsAnalytics.conversionRate}%</p>
+                                            <div className="mt-2 h-1.5 w-full bg-stone-100 rounded-full overflow-hidden">
+                                                <div className="h-full bg-purple-400 rounded-full" style={{ width: `${statsAnalytics.conversionRate}%` }}></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* ── GRÁFICO del periodo ── */}
+                                    <div className="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm">
+                                        <p className="text-xs text-stone-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5"><BarChart3 size={12} className="text-emerald-500"/>Ingresos por {statScope === 'month' ? 'día' : 'mes'}</p>
+                                        <div className="h-36">
+                                            <SimpleChart data={statsAnalytics.chartData} scope={statScope} />
+                                        </div>
+                                    </div>
+
+                                    {/* ── ALERTAS pendientes ── */}
+                                    {(statsAnalytics.pendingPayOrders.length > 0 || statsAnalytics.pendingDeliveryOrders.length > 0) && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            {statsAnalytics.pendingPayOrders.length > 0 && (
+                                                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3">
+                                                    <div className="bg-amber-100 text-amber-600 p-2.5 rounded-xl shrink-0"><AlertTriangle size={20}/></div>
+                                                    <div>
+                                                        <p className="font-bold text-amber-800 text-sm">{statsAnalytics.pendingPayOrders.length} pedidos sin cobrar</p>
+                                                        <p className="text-amber-600 text-xs">Total pendiente: <span className="font-bold">${statsAnalytics.pendingPayTotal.toLocaleString()}</span></p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {statsAnalytics.pendingDeliveryOrders.length > 0 && (
+                                                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-center gap-3">
+                                                    <div className="bg-blue-100 text-blue-600 p-2.5 rounded-xl shrink-0"><Truck size={20}/></div>
+                                                    <div>
+                                                        <p className="font-bold text-blue-800 text-sm">{statsAnalytics.pendingDeliveryOrders.length} pedidos sin entregar</p>
+                                                        <p className="text-blue-600 text-xs">Pendientes de despacho</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* ── MÉTRICAS secundarias ── */}
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                        <div className="bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
+                                            <div className="flex items-center gap-2 mb-2"><Calendar size={16} className="text-amber-500"/><p className="text-[10px] text-stone-400 font-bold uppercase">Mejor día</p></div>
+                                            <p className="text-2xl font-black text-stone-800">{statsAnalytics.bestDay}</p>
+                                            <p className="text-[10px] text-stone-400 mt-1">Más pedidos</p>
+                                        </div>
+                                        <div className="bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
+                                            <div className="flex items-center gap-2 mb-2"><Clock size={16} className="text-indigo-500"/><p className="text-[10px] text-stone-400 font-bold uppercase">Hora pico</p></div>
+                                            <p className="text-lg font-black text-stone-800">{statsAnalytics.peakHourLabel}</p>
+                                            <p className="text-[10px] text-stone-400 mt-1">Más actividad</p>
+                                        </div>
+                                        <div className="bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
+                                            <div className="flex items-center gap-2 mb-2"><Banknote size={16} className="text-emerald-500"/><p className="text-[10px] text-stone-400 font-bold uppercase">Efectivo</p></div>
+                                            <p className="text-lg font-black text-emerald-700">${statsAnalytics.paymentStats.cash.toLocaleString()}</p>
+                                            <p className="text-[10px] text-stone-400 mt-1">{statsAnalytics.totalRevenue > 0 ? Math.round((statsAnalytics.paymentStats.cash / statsAnalytics.totalRevenue) * 100) : 0}% del total</p>
+                                        </div>
+                                        <div className="bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
+                                            <div className="flex items-center gap-2 mb-2"><CreditCard size={16} className="text-blue-500"/><p className="text-[10px] text-stone-400 font-bold uppercase">Digital</p></div>
+                                            <p className="text-lg font-black text-blue-700">${statsAnalytics.paymentStats.transfer.toLocaleString()}</p>
+                                            <p className="text-[10px] text-stone-400 mt-1">{statsAnalytics.totalRevenue > 0 ? Math.round((statsAnalytics.paymentStats.transfer / statsAnalytics.totalRevenue) * 100) : 0}% del total</p>
+                                        </div>
+                                    </div>
+
+                                    {/* ── TENDENCIA 6 meses ── */}
+                                    <div className="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm">
+                                        <h3 className="font-bold text-stone-800 mb-1 flex items-center gap-2"><TrendingUp size={16} className="text-emerald-500"/> Tendencia — últimos 6 meses</h3>
+                                        <p className="text-xs text-stone-400 mb-3">Ingresos por pedidos pagados</p>
+                                        <div className="flex items-end gap-2 h-28">
+                                            {statsAnalytics.trendMonths.map((m, i) => {
+                                                const maxVal = Math.max(...statsAnalytics.trendMonths.map(x => x.value), 1);
+                                                const isLast = i === statsAnalytics.trendMonths.length - 1;
+                                                return (
+                                                    <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+                                                        <div className="w-full relative flex flex-col justify-end" style={{ height: '80px' }}>
+                                                            <div
+                                                                className={`w-full rounded-t-lg transition-all ${isLast ? 'bg-emerald-500' : 'bg-stone-100 group-hover:bg-emerald-200'}`}
+                                                                style={{ height: `${(m.value / maxVal) * 100}%`, minHeight: m.value > 0 ? '4px' : '0' }}
+                                                            >
+                                                                <div className="opacity-0 group-hover:opacity-100 absolute -top-7 left-1/2 -translate-x-1/2 bg-stone-800 text-white text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap z-10">
+                                                                    ${m.value.toLocaleString()}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <span className={`text-[10px] font-bold ${isLast ? 'text-emerald-600' : 'text-stone-400'}`}>{m.label}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    {/* ── TOP CLIENTES + TOP PRODUCTOS ── */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* Top clientes */}
+                                        <div className="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm">
+                                            <h3 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Award size={16} className="text-amber-500"/> Mejores clientes</h3>
+                                            {statsAnalytics.topClients.length === 0 ? (
+                                                <p className="text-stone-400 text-sm">Sin datos aún.</p>
+                                            ) : (
+                                                <div className="space-y-3">
+                                                    {statsAnalytics.topClients.slice(0, 5).map((c, i) => {
+                                                        const maxRev = statsAnalytics.topClients[0]?.revenue || 1;
+                                                        const medals = ['🥇','🥈','🥉'];
+                                                        return (
+                                                            <div key={i}>
+                                                                <div className="flex items-center justify-between text-sm mb-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-base">{medals[i] || `${i+1}.`}</span>
+                                                                        <span className="font-semibold text-stone-700 truncate max-w-[120px]">{c.name}</span>
+                                                                        <span className="text-[10px] text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded-full">{c.orders} ped.</span>
+                                                                    </div>
+                                                                    <span className="font-bold text-stone-800 shrink-0">${c.revenue.toLocaleString()}</span>
+                                                                </div>
+                                                                <div className="h-1.5 w-full bg-stone-100 rounded-full overflow-hidden">
+                                                                    <div className="h-full bg-amber-400 rounded-full" style={{ width: `${(c.revenue / maxRev) * 100}%` }}></div>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Top productos */}
+                                        <div className="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm">
+                                            <h3 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><ShoppingBag size={16} className="text-blue-500"/> Productos más vendidos</h3>
+                                            {(statsAnalytics.topItems.length === 0 && statsAnalytics.products.length === 0) ? (
+                                                <p className="text-stone-400 text-sm">Sin datos aún.</p>
+                                            ) : (
+                                                <div className="space-y-3">
+                                                    {(statsAnalytics.topItems.length > 0 ? statsAnalytics.topItems : statsAnalytics.products.map(p => ({ name: p.name, qty: p.count, revenue: p.revenue }))).slice(0, 5).map((p, i) => {
+                                                        const list = statsAnalytics.topItems.length > 0 ? statsAnalytics.topItems : statsAnalytics.products.map(x => ({ revenue: x.revenue }));
+                                                        const maxRev = list[0]?.revenue || 1;
+                                                        return (
+                                                            <div key={i}>
+                                                                <div className="flex items-center justify-between text-sm mb-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="font-mono text-stone-400 text-xs w-4">{i+1}</span>
+                                                                        <span className="font-semibold text-stone-700 truncate max-w-[130px]">{p.name}</span>
+                                                                        <span className="text-[10px] text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded-full">{p.qty} u.</span>
+                                                                    </div>
+                                                                    <span className="font-bold text-stone-800 shrink-0">${(p.revenue || 0).toLocaleString()}</span>
+                                                                </div>
+                                                                <div className="h-1.5 w-full bg-stone-100 rounded-full overflow-hidden">
+                                                                    <div className="h-full bg-blue-400 rounded-full" style={{ width: `${((p.revenue || 0) / maxRev) * 100}%` }}></div>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* ── MÉTODOS DE PAGO visual ── */}
+                                    <div className="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm">
+                                        <h3 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><PieChart size={16} className="text-purple-500"/> Distribución de cobros</h3>
+                                        {statsAnalytics.totalRevenue === 0 ? <p className="text-stone-400 text-sm">Sin datos aún.</p> : (
+                                            <div className="space-y-3">
+                                                {[
+                                                    { label: 'Efectivo', value: statsAnalytics.paymentStats.cash, color: 'bg-emerald-500', textColor: 'text-emerald-700' },
+                                                    { label: 'Transferencia', value: statsAnalytics.paymentStats.transfer, color: 'bg-blue-500', textColor: 'text-blue-700' },
+                                                    { label: 'Mixto / Parcial', value: Math.max(0, statsAnalytics.totalRevenue - statsAnalytics.paymentStats.cash - statsAnalytics.paymentStats.transfer), color: 'bg-purple-400', textColor: 'text-purple-700' }
+                                                ].map((row, i) => (
+                                                    <div key={i} className="flex items-center gap-3">
+                                                        <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${row.color}`}></div>
+                                                        <div className="flex-1">
+                                                            <div className="flex justify-between text-xs mb-1">
+                                                                <span className={`font-bold ${row.textColor}`}>{row.label}</span>
+                                                                <span className="text-stone-500">${row.value.toLocaleString()} · {statsAnalytics.totalRevenue > 0 ? Math.round((row.value / statsAnalytics.totalRevenue) * 100) : 0}%</span>
+                                                            </div>
+                                                            <div className="h-2 w-full bg-stone-100 rounded-full overflow-hidden">
+                                                                <div className={`h-full ${row.color} rounded-full transition-all`} style={{ width: `${(row.value / statsAnalytics.totalRevenue) * 100}%` }}></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
                                 </div>
                             )}
                         </div>
@@ -1973,81 +2724,117 @@
                                 )}
 
                                 {/* ADD ITEM FORM */}
-                                <div className="pt-3 border-t border-stone-200">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <label className="text-[10px] font-bold text-stone-400 uppercase block">Agregar Ítem</label>
-                                        <button 
-                                            type="button" 
-                                            onClick={() => { setIsCustomItem(!isCustomItem); setSubItem({ productId: '', quantity: 1, unitPrice: 0, detail: '' }); }}
-                                            className="text-[10px] font-bold text-emerald-600 hover:text-emerald-700 underline decoration-dashed transition-colors"
+                                <div className="pt-3 border-t border-stone-200 space-y-3">
+                                    <label className="text-[10px] font-bold text-stone-400 uppercase block">Agregar al pedido</label>
+
+                                    {/* Selector Producto / Servicio */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => { setIsCustomItem(false); setSubItem({ productId: '', quantity: 1, unitPrice: 0, detail: '' }); }}
+                                            className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 font-bold text-sm transition-all ${!isCustomItem ? 'bg-stone-800 border-stone-800 text-white' : 'bg-white border-stone-200 text-stone-400 hover:border-stone-300'}`}
                                         >
-                                            {isCustomItem ? 'Seleccionar del Stock' : 'Agregar Manual / Servicio'}
+                                            <Boxes size={15}/> Producto
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setIsCustomItem(true); setSubItem({ productId: '', quantity: 1, unitPrice: 0, detail: 'Grabado láser' }); }}
+                                            className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 font-bold text-sm transition-all ${isCustomItem ? 'bg-violet-600 border-violet-600 text-white' : 'bg-white border-stone-200 text-stone-400 hover:border-violet-300'}`}
+                                        >
+                                            <LaserIcon size={15}/> Servicio
                                         </button>
                                     </div>
 
-                                    <div className="flex gap-2 items-end">
-                                        {isCustomItem ? (
-                                            <>
-                                                <div className="flex-[2] space-y-1">
-                                                     <input 
-                                                        type="text" 
-                                                        placeholder="Descripción..." 
-                                                        className="w-full p-2.5 bg-white border border-stone-200 rounded-xl text-sm"
-                                                        value={subItem.detail || ''}
-                                                        onChange={e => setSubItem({...subItem, detail: e.target.value})}
-                                                     />
-                                                </div>
-                                                <div className="flex-1 space-y-1">
-                                                     <input 
-                                                        type="number" 
-                                                        placeholder="Precio" 
-                                                        className="w-full p-2.5 bg-white border border-stone-200 rounded-xl text-sm font-mono"
+                                    {/* Modo Servicio */}
+                                    {isCustomItem ? (
+                                        <div className="bg-violet-50 border border-violet-100 rounded-2xl p-3 space-y-2">
+                                            <div className="flex items-center gap-1.5 mb-1">
+                                                <LaserIcon size={13} className="text-violet-500"/>
+                                                <p className="text-[11px] font-bold text-violet-600 uppercase tracking-wide">Servicio personalizado</p>
+                                            </div>
+                                            {/* Sugerencias rápidas */}
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {['Grabado láser', 'Grabado simple', 'Personalización', 'Servicio a medida'].map(s => (
+                                                    <button
+                                                        key={s}
+                                                        type="button"
+                                                        onClick={() => setSubItem({...subItem, detail: s})}
+                                                        className={`text-[11px] px-2.5 py-1 rounded-full border font-bold transition-all ${subItem.detail === s ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-violet-600 border-violet-200 hover:bg-violet-50'}`}
+                                                    >{s}</button>
+                                                ))}
+                                            </div>
+                                            <input
+                                                type="text"
+                                                placeholder="O escribí el servicio..."
+                                                className="w-full p-2.5 bg-white border border-violet-200 rounded-xl text-sm focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 outline-none"
+                                                value={subItem.detail || ''}
+                                                onChange={e => setSubItem({...subItem, detail: e.target.value})}
+                                            />
+                                            <div className="flex gap-2 items-center">
+                                                <div className="relative flex-1">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-sm font-bold">$</span>
+                                                    <input
+                                                        type="number"
+                                                        placeholder="Precio del servicio"
+                                                        className="w-full pl-7 pr-3 p-2.5 bg-white border border-violet-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 outline-none"
                                                         value={subItem.unitPrice || ''}
                                                         onChange={e => setSubItem({...subItem, unitPrice: e.target.value})}
-                                                     />
+                                                    />
                                                 </div>
-                                            </>
-                                        ) : (
-                                            <div className="relative flex-[3]">
-                                              <select 
-													className="w-full p-2.5 bg-white border border-stone-200 rounded-xl text-sm appearance-none pr-8" 
-													value={subItem.productId} 
-													onChange={handleSelectProduct}
-												>
-												<option value="">Seleccionar...</option>
-													{inventory
-													.filter(p => (parseInt(p.stock) || 0) > 0)
-													.map(p => (
-													<option key={p.id} value={p.id}>
-													{p.name} ({p.stock} u. disponibles)
-												</option>
-											))
-										}
-											</select>
-                                                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400"><Boxes size={14}/></div>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleAddItem}
+                                                    disabled={!subItem.detail?.trim() || !subItem.unitPrice || parseFloat(subItem.unitPrice) <= 0}
+                                                    className="bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 shrink-0"
+                                                >
+                                                    <Plus size={16}/> Agregar
+                                                </button>
                                             </div>
-                                        )}
-
-                                        <input 
-                                            type="number" min="1" 
-                                            className="w-16 p-2.5 bg-white border border-stone-200 rounded-xl text-sm text-center font-mono" 
-                                            value={subItem.quantity} 
-                                            onChange={e => setSubItem({...subItem, quantity: e.target.value})}
-                                            placeholder="Cant"
-                                        />
-                                        <button 
-                                            type="button" 
-                                            onClick={handleAddItem}
-                                            disabled={isCustomItem ? (!subItem.detail || !subItem.unitPrice) : !subItem.productId}
-                                            className="bg-emerald-600 hover:bg-emerald-500 text-white p-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-                                        >
-                                            <Plus size={20} />
-                                        </button>
-                                    </div>
-                                    {subItem.unitPrice > 0 && subItem.quantity > 0 && (
-                                        <p className="text-[10px] text-right mt-1 text-emerald-600 font-bold">
-                                            Subtotal: ${(subItem.unitPrice * subItem.quantity).toLocaleString()}
-                                        </p>
+                                            {subItem.unitPrice > 0 && (
+                                                <p className="text-[10px] text-right text-violet-600 font-bold">Subtotal: ${(parseFloat(subItem.unitPrice) || 0).toLocaleString()}</p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        /* Modo Producto */
+                                        <div className="space-y-2">
+                                            <div className="flex gap-2 items-center">
+                                                <div className="relative flex-1">
+                                                    <select
+                                                        className="w-full p-2.5 bg-white border border-stone-200 rounded-xl text-sm appearance-none pr-8 focus:ring-2 focus:ring-stone-300 outline-none"
+                                                        value={subItem.productId}
+                                                        onChange={handleSelectProduct}
+                                                    >
+                                                        <option value="">Elegir producto del stock...</option>
+                                                        {inventory.filter(p => (parseInt(p.stock) || 0) > 0).map(p => (
+                                                            <option key={p.id} value={p.id}>
+                                                                {p.name} ({p.stock} u.) — ${(p.price || 0).toLocaleString()}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400"><Boxes size={14}/></div>
+                                                </div>
+                                                <input
+                                                    type="number" min="1"
+                                                    className="w-16 p-2.5 bg-white border border-stone-200 rounded-xl text-sm text-center font-mono"
+                                                    value={subItem.quantity}
+                                                    onChange={e => setSubItem({...subItem, quantity: e.target.value})}
+                                                    placeholder="Cant"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleAddItem}
+                                                    disabled={!subItem.productId}
+                                                    className="bg-emerald-600 hover:bg-emerald-500 text-white p-2.5 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                                                >
+                                                    <Plus size={20}/>
+                                                </button>
+                                            </div>
+                                            {subItem.unitPrice > 0 && subItem.quantity > 0 && (
+                                                <p className="text-[10px] text-right text-emerald-600 font-bold">
+                                                    Subtotal: ${(subItem.unitPrice * (parseInt(subItem.quantity) || 1)).toLocaleString()}
+                                                </p>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -2058,53 +2845,196 @@
                     </Modal>
 
                    <Modal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} title="Registrar Cobro">
-    {paymentModalStep === 'select' ? (
-        <div className="space-y-3 pt-2">
-            <div className="grid grid-cols-2 gap-3">
-                <button onClick={() => confirmPayment('cash')} className="flex flex-col items-center justify-center p-6 bg-green-50 border border-green-200 rounded-2xl hover:bg-green-100 transition-colors gap-3 group"><div className="bg-green-100 text-green-700 p-3 rounded-full group-hover:scale-110 transition-transform"><Banknote size={28} /></div><span className="font-bold text-green-800">Efectivo Total</span></button>
-                <button onClick={() => confirmPayment('transfer')} className="flex flex-col items-center justify-center p-6 bg-blue-50 border border-blue-200 rounded-2xl hover:bg-blue-100 transition-colors gap-3 group"><div className="bg-blue-100 text-blue-700 p-3 rounded-full group-hover:scale-110 transition-transform"><CreditCard size={28} /></div><span className="font-bold text-blue-800">Transf. Total</span></button>
-            </div>
-            <button onClick={() => setPaymentModalStep('mixed')} className="w-full flex items-center justify-center gap-3 p-4 bg-purple-50 border border-purple-200 rounded-2xl hover:bg-purple-100 transition-colors text-purple-800 font-bold"><div className="flex -space-x-1"><Banknote size={20}/><CreditCard size={20}/></div><span>Pago Mixto (Efectivo + Transferencia)</span></button>
-            
-            {/* NUEVO BOTON PAGO PARCIAL */}
-            <button onClick={() => setPaymentModalStep('partial')} className="w-full flex items-center justify-center gap-3 p-4 bg-orange-50 border border-orange-200 rounded-2xl hover:bg-orange-100 transition-colors text-orange-800 font-bold">
-                 <div className="bg-orange-100 p-2 text-orange-700 rounded-full"><Coins size={20}/></div><span>Pago Parcial (Seña / Adelanto)</span>
-            </button>
-        </div>
-    ) : paymentModalStep === 'partial' ? (
-        /* NUEVA VISTA PARA PAGO PARCIAL */
-        <div className="space-y-5 pt-2 animate-in slide-in-from-right-4">
-            <div className="bg-stone-50 p-4 rounded-2xl border border-stone-100 text-center">
-                <p className="text-xs text-stone-400 uppercase font-bold mb-1">Falta Pagar</p>
-                <p className="text-2xl font-bold text-stone-900">${(orders.find(o => o.id === pendingPaymentId)?.price - (orders.find(o => o.id === pendingPaymentId)?.amountPaid || 0)).toLocaleString()}</p>
-            </div>
-            <div className="space-y-4">
-                <div>
-                    <label className="text-xs font-bold text-stone-500 uppercase mb-1 flex items-center gap-1">Monto que entrega ahora</label>
-                    <input type="number" placeholder="0" className="w-full p-4 bg-white border border-stone-200 rounded-xl font-bold text-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none" value={partialPayment.amount} onChange={(e) => setPartialPayment({...partialPayment, amount: e.target.value})} autoFocus />
+    {(() => {
+        const pendingOrder = orders.find(o => o.id === pendingPaymentId);
+        const totalPrice = pendingOrder?.price || 0;
+        const alreadyPaid = pendingOrder?.amountPaid || 0;
+        const remaining = totalPrice - alreadyPaid;
+        const hasAdvance = alreadyPaid > 0;
+
+        return paymentModalStep === 'select' ? (
+            <div className="space-y-4 pt-1">
+                {/* Resumen del pedido */}
+                <div className="bg-stone-50 border border-stone-100 rounded-2xl p-4">
+                    <p className="text-xs text-stone-400 uppercase font-bold mb-2">Pedido: {pendingOrder?.client}</p>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-stone-400">Total</p>
+                            <p className="text-xl font-black text-stone-800">${totalPrice.toLocaleString()}</p>
+                        </div>
+                        {hasAdvance && (
+                            <>
+                                <div className="text-stone-200">→</div>
+                                <div>
+                                    <p className="text-xs text-orange-500">Ya pagó</p>
+                                    <p className="text-xl font-black text-orange-500">${alreadyPaid.toLocaleString()}</p>
+                                </div>
+                                <div className="text-stone-200">→</div>
+                                <div>
+                                    <p className="text-xs text-red-500 font-bold">Resta</p>
+                                    <p className="text-xl font-black text-red-500">${remaining.toLocaleString()}</p>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                    {hasAdvance && (
+                        <div className="mt-2">
+                            <div className="h-1.5 w-full bg-red-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-orange-400 rounded-full" style={{ width: `${Math.min((alreadyPaid / totalPrice) * 100, 100)}%` }}></div>
+                            </div>
+                        </div>
+                    )}
                 </div>
+
+                {/* Pagos completos */}
                 <div>
-                    <label className="text-xs font-bold text-stone-500 uppercase mb-1">Método de pago</label>
-                    <div className="grid grid-cols-2 gap-2">
-                        <button type="button" onClick={() => setPartialPayment({...partialPayment, method: 'cash'})} className={`py-3 rounded-xl border font-bold text-sm transition-colors ${partialPayment.method === 'cash' ? 'bg-green-100 border-green-300 text-green-800' : 'bg-white text-stone-500 hover:bg-stone-50'}`}>Efectivo</button>
-                        <button type="button" onClick={() => setPartialPayment({...partialPayment, method: 'transfer'})} className={`py-3 rounded-xl border font-bold text-sm transition-colors ${partialPayment.method === 'transfer' ? 'bg-blue-100 border-blue-300 text-blue-800' : 'bg-white text-stone-500 hover:bg-stone-50'}`}>Transferencia</button>
+                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2 ml-1">Pago completo del saldo restante (${remaining.toLocaleString()})</p>
+                    <div className="grid grid-cols-2 gap-3">
+                        <button onClick={() => confirmPayment('cash')} className="flex flex-col items-center justify-center p-5 bg-green-50 border-2 border-green-200 rounded-2xl hover:bg-green-100 hover:border-green-300 transition-all gap-2 group">
+                            <div className="bg-green-100 text-green-700 p-3 rounded-full group-hover:scale-110 transition-transform"><Banknote size={26}/></div>
+                            <span className="font-bold text-green-800 text-sm">Efectivo</span>
+                            <span className="text-[10px] text-green-600 bg-green-100 px-2 py-0.5 rounded-full">Pago total</span>
+                        </button>
+                        <button onClick={() => confirmPayment('transfer')} className="flex flex-col items-center justify-center p-5 bg-blue-50 border-2 border-blue-200 rounded-2xl hover:bg-blue-100 hover:border-blue-300 transition-all gap-2 group">
+                            <div className="bg-blue-100 text-blue-700 p-3 rounded-full group-hover:scale-110 transition-transform"><CreditCard size={26}/></div>
+                            <span className="font-bold text-blue-800 text-sm">Transferencia</span>
+                            <span className="text-[10px] text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">Pago total</span>
+                        </button>
                     </div>
                 </div>
+
+                {/* Divisor */}
+                <div className="flex items-center gap-3">
+                    <div className="flex-1 h-px bg-stone-100"></div>
+                    <span className="text-[10px] text-stone-400 font-bold uppercase">Otras opciones</span>
+                    <div className="flex-1 h-px bg-stone-100"></div>
+                </div>
+
+                {/* Mixto y Adelanto */}
+                <div className="space-y-2">
+                    <button onClick={() => setPaymentModalStep('mixed')} className="w-full flex items-center gap-4 p-4 bg-purple-50 border-2 border-purple-200 rounded-2xl hover:bg-purple-100 hover:border-purple-300 transition-all group">
+                        <div className="bg-purple-100 text-purple-700 p-2.5 rounded-xl group-hover:scale-110 transition-transform flex gap-0.5"><Banknote size={18}/><CreditCard size={18}/></div>
+                        <div className="text-left">
+                            <p className="font-bold text-purple-800 text-sm">Pago Mixto</p>
+                            <p className="text-[11px] text-purple-500">Parte en efectivo + parte en transferencia</p>
+                        </div>
+                    </button>
+                    <button onClick={() => setPaymentModalStep('partial')} className="w-full flex items-center gap-4 p-4 bg-orange-50 border-2 border-orange-200 rounded-2xl hover:bg-orange-100 hover:border-orange-300 transition-all group">
+                        <div className="bg-orange-100 text-orange-700 p-2.5 rounded-xl group-hover:scale-110 transition-transform"><Coins size={20}/></div>
+                        <div className="text-left">
+                            <p className="font-bold text-orange-800 text-sm">Seña / Adelanto parcial</p>
+                            <p className="text-[11px] text-orange-500">Registrar un pago parcial, queda saldo pendiente</p>
+                        </div>
+                    </button>
+                </div>
             </div>
-            <div className="flex gap-3 pt-2">
-                <button onClick={() => setPaymentModalStep('select')} className="flex-1 py-3 rounded-xl font-bold bg-stone-100 text-stone-500 hover:bg-stone-200">Volver</button>
-                <button onClick={() => confirmPayment('partial')} className="flex-[2] py-3 rounded-xl font-bold bg-orange-500 text-white hover:bg-orange-600 shadow-lg shadow-orange-200">Confirmar Adelanto</button>
+        ) : paymentModalStep === 'partial' ? (
+            <div className="space-y-5 pt-2 animate-in slide-in-from-right-4">
+                <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4">
+                    <div className="flex justify-between items-center mb-2">
+                        <div>
+                            <p className="text-xs text-stone-400 font-bold uppercase">Total pedido</p>
+                            <p className="text-lg font-black text-stone-700">${totalPrice.toLocaleString()}</p>
+                        </div>
+                        {hasAdvance && <div className="text-stone-300">—</div>}
+                        {hasAdvance && (
+                            <div>
+                                <p className="text-xs text-orange-500 font-bold uppercase">Ya adelantó</p>
+                                <p className="text-lg font-black text-orange-500">${alreadyPaid.toLocaleString()}</p>
+                            </div>
+                        )}
+                        <div className="text-stone-300">→</div>
+                        <div>
+                            <p className="text-xs text-red-500 font-bold uppercase">Saldo</p>
+                            <p className="text-lg font-black text-red-500">${remaining.toLocaleString()}</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="space-y-4">
+                    <div>
+                        <label className="text-xs font-bold text-stone-500 uppercase mb-2 flex items-center gap-1"><Coins size={12}/> Monto que entrega ahora</label>
+                        <input type="number" placeholder="0" className="w-full p-4 bg-white border-2 border-orange-200 rounded-xl font-bold text-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400 outline-none" value={partialPayment.amount} onChange={(e) => setPartialPayment({...partialPayment, amount: e.target.value})} autoFocus />
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold text-stone-500 uppercase mb-2">Cómo paga este adelanto</label>
+                        <div className="grid grid-cols-2 gap-2">
+                            <button type="button" onClick={() => setPartialPayment({...partialPayment, method: 'cash'})} className={`py-3 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 ${partialPayment.method === 'cash' ? 'bg-green-100 border-green-300 text-green-800' : 'bg-white border-stone-200 text-stone-400 hover:bg-stone-50'}`}><Banknote size={16}/>Efectivo</button>
+                            <button type="button" onClick={() => setPartialPayment({...partialPayment, method: 'transfer'})} className={`py-3 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 ${partialPayment.method === 'transfer' ? 'bg-blue-100 border-blue-300 text-blue-800' : 'bg-white border-stone-200 text-stone-400 hover:bg-stone-50'}`}><CreditCard size={16}/>Transferencia</button>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex gap-3 pt-2">
+                    <button onClick={() => setPaymentModalStep('select')} className="flex-1 py-3 rounded-xl font-bold bg-stone-100 text-stone-500 hover:bg-stone-200">Volver</button>
+                    <button onClick={() => confirmPayment('partial')} className="flex-[2] py-3 rounded-xl font-bold bg-orange-500 text-white hover:bg-orange-600 shadow-lg shadow-orange-200">Registrar Adelanto</button>
+                </div>
             </div>
-        </div>
-    ) : (
-        /* VISTA ORIGINAL PAGO MIXTO */
-        <div className="space-y-5 pt-2 animate-in slide-in-from-right-4">
-            <div className="bg-stone-50 p-4 rounded-2xl border border-stone-100 text-center"><p className="text-xs text-stone-400 uppercase font-bold mb-1">Total a Cobrar</p><p className="text-2xl font-bold text-stone-900">${(orders.find(o => o.id === pendingPaymentId)?.price - (orders.find(o => o.id === pendingPaymentId)?.amountPaid || 0)).toLocaleString()}</p></div>
-            <div className="space-y-4"><div><label className="text-xs font-bold text-green-600 uppercase mb-1 flex items-center gap-1"><Banknote size={12}/> Monto en Efectivo</label><input type="number" placeholder="0" className="w-full p-4 bg-white border border-stone-200 rounded-xl font-bold text-lg focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none" value={mixedAmounts.cash} onChange={(e) => handleNewPaymentMixedChange('cash', e.target.value)} onFocus={e => e.target.select()} autoFocus /></div><div className="flex justify-center"><ArrowDownCircle size={20} className="text-stone-300"/></div><div><label className="text-xs font-bold text-blue-600 uppercase mb-1 flex items-center gap-1"><CreditCard size={12}/> Resto en Transferencia (Auto)</label><input type="number" className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl font-bold text-lg text-stone-500" value={mixedAmounts.transfer} readOnly /></div></div>
-            <div className="flex gap-3 pt-2"><button onClick={() => setPaymentModalStep('select')} className="flex-1 py-3 rounded-xl font-bold bg-stone-100 text-stone-500 hover:bg-stone-200">Volver</button><button onClick={() => confirmPayment('mixed')} className="flex-[2] py-3 rounded-xl font-bold bg-purple-600 text-white hover:bg-purple-700 shadow-lg shadow-purple-200">Confirmar Mixto</button></div>
-        </div>
-    )}
+        ) : (
+            <div className="space-y-5 pt-2 animate-in slide-in-from-right-4">
+                <div className="bg-purple-50 border border-purple-100 rounded-2xl p-4 text-center">
+                    <p className="text-xs text-stone-400 uppercase font-bold mb-1">Saldo a cobrar</p>
+                    <p className="text-2xl font-black text-stone-900">${remaining.toLocaleString()}</p>
+                    {hasAdvance && <p className="text-[11px] text-orange-500 mt-1">Ya adelantó ${alreadyPaid.toLocaleString()}</p>}
+                </div>
+                <div className="space-y-4">
+                    <div>
+                        <label className="text-xs font-bold text-green-600 uppercase mb-1 flex items-center gap-1"><Banknote size={12}/> Monto en Efectivo</label>
+                        <input type="number" placeholder="0" className="w-full p-4 bg-white border-2 border-green-200 rounded-xl font-bold text-lg focus:ring-2 focus:ring-green-500/20 focus:border-green-400 outline-none" value={mixedAmounts.cash} onChange={(e) => handleNewPaymentMixedChange('cash', e.target.value)} onFocus={e => e.target.select()} autoFocus />
+                    </div>
+                    <div className="flex justify-center"><ArrowDownCircle size={20} className="text-stone-300"/></div>
+                    <div>
+                        <label className="text-xs font-bold text-blue-600 uppercase mb-1 flex items-center gap-1"><CreditCard size={12}/> Resto en Transferencia (auto)</label>
+                        <input type="number" className="w-full p-4 bg-stone-50 border-2 border-blue-100 rounded-xl font-bold text-lg text-stone-500" value={mixedAmounts.transfer} readOnly />
+                    </div>
+                </div>
+                <div className="flex gap-3 pt-2">
+                    <button onClick={() => setPaymentModalStep('select')} className="flex-1 py-3 rounded-xl font-bold bg-stone-100 text-stone-500 hover:bg-stone-200">Volver</button>
+                    <button onClick={() => confirmPayment('mixed')} className="flex-[2] py-3 rounded-xl font-bold bg-purple-600 text-white hover:bg-purple-700 shadow-lg shadow-purple-200">Confirmar Pago Mixto</button>
+                </div>
+            </div>
+        );
+    })()}
 </Modal>
+
+                    {/* MODAL ELIMINAR PEDIDO CON OPCIÓN DE REPONER STOCK */}
+                    {deleteOrderModal.isOpen && (
+                        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+                            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-300">
+                                <div className="p-6 flex flex-col items-center text-center">
+                                    <div className="bg-red-50 text-red-500 p-4 rounded-full mb-4"><Trash2 size={32}/></div>
+                                    <h3 className="text-xl font-bold text-stone-800 mb-1">Eliminar Pedido</h3>
+                                    <p className="text-stone-500 text-sm mb-1">Pedido de <span className="font-bold text-stone-700">{deleteOrderModal.order?.client}</span></p>
+                                    {deleteOrderModal.order?.items?.some(i => i.productId) ? (
+                                        <>
+                                            <p className="text-xs text-stone-400 mb-3">¿Querés reponer los productos al inventario?</p>
+                                            <div className="w-full bg-stone-50 rounded-2xl p-3 mb-5 text-left space-y-1">
+                                                {deleteOrderModal.order.items.filter(i => i.productId).map((item, i) => (
+                                                    <div key={i} className="flex justify-between text-xs text-stone-600">
+                                                        <span>{item.name || item.detail}</span>
+                                                        <span className="font-bold text-emerald-600">+{item.quantity} u.</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <p className="text-xs text-stone-400 mb-5">Esta acción no se puede deshacer.</p>
+                                    )}
+                                    <div className="flex flex-col gap-2 w-full">
+                                        {deleteOrderModal.order?.items?.some(i => i.productId) && (
+                                            <button onClick={() => confirmDeleteOrder(true)} className="w-full py-3 rounded-xl font-bold bg-emerald-500 hover:bg-emerald-600 text-white transition-colors flex items-center justify-center gap-2">
+                                                <Package size={16}/> Eliminar y reponer stock
+                                            </button>
+                                        )}
+                                        <button onClick={() => confirmDeleteOrder(false)} className="w-full py-3 rounded-xl font-bold bg-red-500 hover:bg-red-600 text-white transition-colors">
+                                            Eliminar sin reponer
+                                        </button>
+                                        <button onClick={() => setDeleteOrderModal({ isOpen: false, order: null })} className="w-full py-3 rounded-xl font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors">
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                      <Modal isOpen={isDeliveryModalOpen} onClose={() => setIsDeliveryModalOpen(false)} title="Confirmar Entrega">
                         <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
@@ -2112,6 +3042,39 @@
                             <div className="space-y-1"><label className="text-xs font-bold text-stone-400 uppercase">Fecha y Hora de Entrega</label><div className="relative"><div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400"><Clock size={18}/></div><input type="datetime-local" className="w-full pl-11 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none text-sm font-medium" value={deliveryDateInput} onChange={(e) => setDeliveryDateInput(e.target.value)} /></div><p className="text-[10px] text-stone-400 ml-1">Dejar como está para usar fecha actual.</p></div>
                             <div className="flex gap-3 pt-2"><button onClick={() => setIsDeliveryModalOpen(false)} className="flex-1 py-3 rounded-xl font-bold bg-stone-100 text-stone-500 hover:bg-stone-200 transition-colors">Cancelar</button><button onClick={handleDeliveryConfirm} className="flex-[2] py-3 rounded-xl font-bold bg-stone-900 text-white hover:bg-stone-800 transition-colors shadow-lg">Confirmar Entrega</button></div>
                         </div>
+                    </Modal>
+
+                    <Modal isOpen={isTransferModalOpen} onClose={() => setIsTransferModalOpen(false)} title="Pasar Efectivo a Banco">
+                        <form onSubmit={handleSaveTransfer} className="space-y-5">
+                            <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 flex items-start gap-3">
+                                <div className="bg-indigo-100 text-indigo-600 p-2 rounded-xl shrink-0"><Repeat size={20}/></div>
+                                <div>
+                                    <p className="text-sm font-bold text-indigo-800">Movimiento interno</p>
+                                    <p className="text-xs text-indigo-500 mt-0.5">Resta del efectivo y suma a la cuenta bancaria. No afecta ingresos ni gastos.</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-green-50 border border-green-100 rounded-xl p-3 text-center">
+                                    <p className="text-[10px] font-bold text-green-600 uppercase mb-1">Efectivo actual</p>
+                                    <p className="text-lg font-black text-green-700">${finances.totalCash.toLocaleString()}</p>
+                                </div>
+                                <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-center">
+                                    <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">Digital actual</p>
+                                    <p className="text-lg font-black text-blue-700">${finances.totalTransfer.toLocaleString()}</p>
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-stone-500 uppercase">Monto a transferir</label>
+                                <input type="number" placeholder="0" autoFocus className="w-full p-4 bg-stone-50 border-2 border-indigo-200 rounded-xl font-bold text-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none" value={transferForm.amount} onChange={e => setTransferForm({...transferForm, amount: e.target.value})} onFocus={e => e.target.select()} />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-stone-500 uppercase">Nota (opcional)</label>
+                                <input type="text" placeholder="Ej: Depósito bancario del día" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm" value={transferForm.note} onChange={e => setTransferForm({...transferForm, note: e.target.value})} />
+                            </div>
+                            <button type="submit" disabled={isSaving} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-70 transition-colors">
+                                {isSaving ? <Loader2 size={20} className="animate-spin"/> : <><Repeat size={18}/> Confirmar movimiento</>}
+                            </button>
+                        </form>
                     </Modal>
 
                     <Modal isOpen={isExpenseModalOpen} onClose={() => setIsExpenseModalOpen(false)} title="Registrar Gasto">
