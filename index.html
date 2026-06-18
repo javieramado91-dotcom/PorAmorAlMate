@@ -809,11 +809,11 @@
             const [deliveryDateInput, setDeliveryDateInput] = useState('');
 
             const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
-            const [expenseForm, setExpenseForm] = useState({ description: '', amount: '', method: 'cash', date: new Date().toISOString() });
+            const [expenseForm, setExpenseForm] = useState({ description: '', amount: '', method: 'cash', date: new Date().toISOString().split('T')[0] });
             
             // Income Modal
             const [isIncomeModalOpen, setIsIncomeModalOpen] = useState(false);
-            const [incomeForm, setIncomeForm] = useState({ description: '', amount: '', method: 'cash', date: new Date().toISOString() });
+            const [incomeForm, setIncomeForm] = useState({ description: '', amount: '', method: 'cash', date: new Date().toISOString().split('T')[0] });
 
             // Inventory (Price List)
             const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
@@ -1557,8 +1557,9 @@
                 
                 setIsSaving(true);
 
+                const nowExp = new Date();
                 const parts = expenseForm.date.split('-');
-                const selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
+                const selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), nowExp.getHours(), nowExp.getMinutes(), nowExp.getSeconds());
 
                 const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'expenses');
                 try {
@@ -1619,8 +1620,9 @@
                 
                 setIsSaving(true);
 
+                const nowInc = new Date();
                 const parts = incomeForm.date.split('-');
-                const selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
+                const selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), nowInc.getHours(), nowInc.getMinutes(), nowInc.getSeconds());
 
                 const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'extra_incomes');
                 try {
